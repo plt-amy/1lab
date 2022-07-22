@@ -49,7 +49,7 @@ the right locations. The result will be linked as `./result`, which can
 then be used to serve a website:
 
 ```bash
-$ nix build
+$ nix-build
 $ python -m http.server --directory result
 ```
 
