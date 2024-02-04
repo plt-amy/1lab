@@ -4,6 +4,7 @@ description: |
 ---
 <!--
 ```agda
+open import Cat.Displayed.Instances.F-Algebras
 open import Cat.Instances.Elements.Covariant
 open import Cat.Functor.Adjoint.Reflective
 open import Cat.CartesianClosed.Locally
@@ -30,7 +31,7 @@ to use as a companion to more traditional resources.
 
 This page attempts to (somewhat) rectify this situation by gathering all
 of the results from "Sketches of an Elephant – A Topos Theory Compendium"
-@[Elephant] in a single place.^[It also serves as an excellent place to
+[@Elephant] in a single place.^[It also serves as an excellent place to
 find possible contributions!]
 
 # A. Toposes as categories
@@ -45,11 +46,13 @@ _ = FG-iso→is-reflective
 _ = crude-monadicity
 _ = ∫
 _ = Karoubi-is-completion
+_ = lambek
 ```
 -->
 
 * Lemma 1.1.1: `FG-iso→is-reflective`{.Agda}
 * Lemma 1.1.2: `crude-monadicity`{.Agda}
+* Lemma 1.1.4: `lambek`{.Agda}
 * Proposition 1.1.7: `∫`{.Agda}
 * Lemma 1.1.8: `Karoubi-is-completion`{.Agda}
 
@@ -63,7 +66,7 @@ _ = with-pullbacks
 ```
 -->
 
-* Lemma 1.2.2:
+* Lemma 1.2.1:
   i.   `Finitely-complete→is-finitely-complete`{.Agda}
   iii. `with-equalisers`{.Agda}
   iv.  `with-pullbacks`{.Agda}

@@ -522,7 +522,7 @@ is-cat-equivalence→equiv-on-objects {C = C} {D = D} {F = F} ccat dcat eqv =
 
 
 
-## Isomorphisms
+## Isomorphisms {defines="isomorphism-of-categories"}
 
 Another, more direct way of proving that a functor is an equivalence of
 precategories is proving that it is an **isomorphism of precategories**:

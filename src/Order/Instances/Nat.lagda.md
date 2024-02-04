@@ -21,7 +21,7 @@ open import Order.Base
 module Order.Instances.Nat where
 ```
 
-# The usual ordering on natural numbers
+# The usual ordering on natural numbers {defines="poset-of-natural-numbers"}
 
 <!--
 ```agda

@@ -38,7 +38,7 @@ module _
 ```
 -->
 
-# Continuity of adjoints
+# Continuity of adjoints {defines="rapl lapc"}
 
 We prove that every functor $R : \cD \to \cC$ admitting a [[left
 adjoint]] $L \dashv R$ preserves every limit which exists in $\cD$. We

@@ -602,7 +602,9 @@ module preserves-colimit
     → {p : ∀ {i j} (f : J.Hom i j) → eps j C.∘ Dia.F₁ f ≡ eps i}
     → (colim : is-lan !F Dia K eta)
     → F.F₁ (is-colimit.universal colim eps p) ≡ is-colimit.universal (preserves colim) (λ j → F.F₁ (eps j)) (λ f → F.collapse (p f))
-  universal colim = is-colimit.unique (preserves colim) _ _ _ (λ j → F.collapse (is-colimit.factors colim _ _))
+  universal colim =
+    is-colimit.unique (preserves colim) _ _ _
+      (λ j → F.collapse (is-colimit.factors colim _ _))
 
   colimit : Colimit Dia → Colimit (F F∘ Dia)
   colimit colim = to-colimit (preserves (Colimit.has-colimit colim))

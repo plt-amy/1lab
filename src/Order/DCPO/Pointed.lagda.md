@@ -132,7 +132,7 @@ upper bound in a pointed DCPO.
     extend-bottom-lub→lub (⋃.has-lub _ _)
 ```
 
-## Fixpoints
+## Fixpoints {defines="kleenes-fixpoint-theorem"}
 
 Let $D$ be a pointed DCPO. Every Scott continuous function $f : D \to D$ has a
 [least fixed point].

@@ -145,6 +145,25 @@ abstract
     : h ∘ i ≡ c ∘ d
     → f ∘ g ∘ h ∘ i ≡ f ∘ (g ∘ c) ∘ d
   centralizer p = centralize refl p
+
+  disperse
+    : f ∘ g ≡ a ∘ b
+    → h ∘ i ≡ c ∘ d
+    → f ∘ (g ∘ h) ∘ i ≡ a ∘ b ∘ c ∘ d
+  disperse {f = f} {g = g} {a = a} {b = b} {h = h} {i = i} {c = c} {d = d} p q =
+    f ∘ (g ∘ h) ∘ i ≡⟨ pushr (pullr q) ⟩
+    (f ∘ g) ∘ c ∘ d ≡⟨ pushl p ⟩
+    a ∘ b ∘ c ∘ d ∎
+
+  dispersel
+    : f ∘ g ≡ a ∘ b
+    → f ∘ (g ∘ h) ∘ i ≡ a ∘ b ∘ h ∘ i
+  dispersel p = disperse p refl
+
+  disperser
+    : h ∘ i ≡ c ∘ d
+    → f ∘ (g ∘ h) ∘ i ≡ f ∘ g ∘ c ∘ d
+  disperser p = disperse refl p
 ```
 
 ## Cancellation
