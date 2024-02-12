@@ -150,7 +150,12 @@ private
   -- an application of is-hlevel/is-prop/is-set into an 'underlying
   -- type' and level arguments.
   hlevel-types : List Name
-  hlevel-types = quote is-hlevel ∷ quote is-prop ∷ quote is-set ∷ quote is-groupoid ∷ []
+  hlevel-types =
+    quote is-hlevel ∷
+    quote is-prop ∷
+    quote is-set ∷
+    quote is-groupoid ∷
+    []
 
   pattern nat-lit n =
     def (quote Number.fromNat) (_ ∷ _ ∷ _ ∷ lit (nat n) v∷ _)
@@ -348,19 +353,39 @@ from the wanted level (k + n) until is-hlevel-+ n (sucᵏ' n) w works.
     go instances
 
   -- Entry point for calling the tactic.
-  search : Bool → Term → Nat → Term → TC ⊤
+  search : List Nat → Nat → Bool → Term → Nat → Term → TC ⊤
   -- Give up if we're out of fuel:
-  search has-alts _     zero    goal = unify goal unknown
+  search ctx-prfs depth has-alts _     zero    goal = unify goal unknown
 
   -- Actual main loop: try using the hints database, try treating the
   -- goal as an n-type, fall back to instance search.
-  search has-alts level (suc n) goal =
-    use-projections
+  search ctx-prfs depth has-alts level (suc n) goal =
+      use-projections
+      <|> use-context
       <|> use-hints
       <|> use-instance-search has-alts goal
       <|> typeError "Search failed!!"
     where
       open hlevel-projection
+
+      use-context : TC ⊤
+      use-context = do
+        (wanted-ty , wanted-lv) ← decompose-is-hlevel goal
+        wait-principal-arg wanted-ty
+        debugPrint "tactic.hlevel" 10 $ "Attempting to use context for goal\n  " ∷ termErr wanted-ty ∷ []
+        nondet (eff List) ctx-prfs λ idx → do
+          let idx = idx + depth
+          (have-ty , have-lv) ← decompose-is-hlevel (var₀ idx)
+          debugPrint "tactic.hlevel" 20 
+            [ "Considering context entry " , termErr (var₀ idx) , " with type is-hlevel " , termErr have-ty , " " , termErr have-lv ]
+          have-lv ← normalise have-lv
+          wanted-lv ← normalise wanted-lv
+          let try-solve = do
+            unify wanted-ty have-ty
+            lifting-loop 0 (var₀ idx) goal have-lv wanted-lv
+            commitTC
+            debugPrint "tactic.hlevel" 10 [ "Solved using context entry " , termErr (var₀ idx) ]
+          try-solve <|> backtrack "Failed to unify context type"
 
       -- Nondeterministically use a projection for establishing the
       -- result. This follows the approach described in [Using
@@ -501,7 +526,7 @@ from the wanted level (k + n) until is-hlevel-+ n (sucᵏ' n) w works.
           cont
           -- go back under the new scope to recursively search for
           -- levels.
-          gounder ⊤ $ search has-alts unknown n mv
+          gounder ⊤ $ search ctx-prfs (depth + under) has-alts unknown n mv
 
       -- Try all the candidate hints in order. This is a version of
       -- 'nondet' which additionally threads whether we're looking at
@@ -614,8 +639,11 @@ hlevel-tactic-worker goal = do
   -- the Πs (extend the scope with their argument types), then 'leave'
   -- (wrap in lambdas) to get back out.
   solved ← enter $ do
+    hlevel-proofs ← do
+      ctx ← getContext
+      filter-map id <$> for (count $ length ctx) λ idx → (just idx <$ decompose-is-hlevel (var₀ idx)) <|> pure nothing
     goal' ← new-meta (def (quote is-hlevel) (ty v∷ lv v∷ []))
-    search false lv 10 goal'
+    search hlevel-proofs 0 false lv 10 goal'
     pure goal'
   unify goal (leave solved)
 
@@ -802,4 +830,7 @@ private
     _ = hlevel!
 
     _ : ∀ {ℓ} {A : Type ℓ} → is-groupoid (is-hlevel A 5)
+    _ = hlevel!
+ 
+    _ : ∀ {ℓ n} {A B : Type ℓ} → is-hlevel A n → is-hlevel B n → (C : n-Type ℓ n) → is-hlevel (A × B × ∣ C ∣) (5 + n)
     _ = hlevel!

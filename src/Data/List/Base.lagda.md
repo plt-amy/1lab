@@ -299,6 +299,13 @@ lookup x ((k , v) ∷ xs) with x ≡? k
 ... | yes _ = just v
 ... | no  _ = lookup x xs
 
+
+filter-map : (A → Maybe B) → List A → List B
+filter-map f [] = []
+filter-map f (x ∷ xs) with f x
+... | nothing = filter-map f xs
+... | just y  = y ∷ filter-map f xs
+
 _!_ : (l : List A) → Fin (length l) → A
 (x ∷ xs) ! fzero  = x
 (x ∷ xs) ! fsuc n = xs ! n
@@ -306,5 +313,6 @@ _!_ : (l : List A) → Fin (length l) → A
 tabulate : ∀ {n} (f : Fin n → A) → List A
 tabulate {n = zero}  f = []
 tabulate {n = suc n} f = f fzero ∷ tabulate (f ∘ fsuc)
+
 ```
 -->

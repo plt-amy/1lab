@@ -70,14 +70,14 @@ We begin by defining the object set functor.
 Γ .F-∘ _ _ = refl
 ```
 
-We must then prove that the assignment `Disc'`{.Agda} extends to a
+We must then prove that the assignment `Disc!`{.Agda} extends to a
 functor from `Sets`{.Agda}, and prove that it's left adjoint to the
 functor `Γ`{.Agda} we defined above. Then we define the adjunction
 `Disc⊣Γ`{.Agda}.
 
 ```agda
 Disc : Functor (Sets ℓ) (Strict-cats ℓ ℓ)
-Disc .F₀ S = Disc' S , S .is-tr
+Disc .F₀ S = Disc! S , S .is-tr
 Disc .F₁ = lift-disc
 Disc .F-id = Functor-path (λ x → refl) λ f → refl
 Disc .F-∘ _ _ = Functor-path (λ x → refl) λ f → refl
@@ -123,7 +123,7 @@ identity map suffices.
 ```agda
   adj .counit = NT (λ x → F x) nat where
     F : (x : Precategory.Ob (Strict-cats ℓ ℓ))
-      → Functor (Disc' (el _ (x .snd))) _
+      → Functor (Disc! (x .fst .Ob) {is-grpd = is-hlevel-suc 2 (x .snd)}) _
     F X .F₀ x = x
     F X .F₁ p = subst (X .fst .Hom _) p (X .fst .id) {- 1 -}
     F X .F-id = transport-refl _

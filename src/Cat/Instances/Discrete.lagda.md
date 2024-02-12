@@ -46,10 +46,8 @@ Disc A A-grpd .idr _ = ∙-idl _
 Disc A A-grpd .idl _ = ∙-idr _
 Disc A A-grpd .assoc _ _ _ = sym (∙-assoc _ _ _)
 
-Disc' : Set ℓ → Precategory ℓ ℓ
-Disc' A = Disc ∣ A ∣ h where abstract
-  h : is-groupoid ∣ A ∣
-  h = is-hlevel-suc 2 (A .is-tr)
+Disc! : {T : Type ℓ} ⦃ u : Underlying T ⦄ (A : T) {@(tactic hlevel-tactic-worker) is-grpd : is-groupoid ⌞ A ⌟} → Precategory (u .Underlying.ℓ-underlying) (u .Underlying.ℓ-underlying)
+Disc! A {is-grpd} = Disc ⌞ A ⌟ is-grpd
 ```
 
 Clearly this is a [[univalent|univalent category]] [[groupoid|pregroupoid]]:
@@ -69,9 +67,10 @@ automatically respects equality in a functorial way.
 
 ```agda
 lift-disc
-  : ∀ {A : Set ℓ} {B : Set ℓ'}
-  → (∣ A ∣ → ∣ B ∣)
-  → Functor (Disc' A) (Disc' B)
+  : {A : Type ℓ} {@(tactic hlevel-tactic-worker) is-grpd₁ : is-groupoid A} 
+    {B : Type ℓ'} {@(tactic hlevel-tactic-worker) is-grpd₂ : is-groupoid B}
+    → (A → B) 
+    → Functor (Disc! A) (Disc! B)
 lift-disc f .F₀ = f
 lift-disc f .F₁ = ap f
 lift-disc f .F-id = refl
@@ -98,21 +97,21 @@ If $X$ is a `discrete type`{.Agda ident=Discrete}, then it is in
 particular in `Set`{.Agda}, and we can make diagrams of shape
 $\rm{Disc}(X)$ in some category $\cC$, using the decidable
 equality on $X$. We note that the decidable equality is _redundant_
-information: The construction `Disc'`{.Agda} above extends into a [[left
+information: The construction `Disc!`{.Agda} above extends into a [[left
 adjoint]] to the `Ob`{.Agda} functor.
 
 ```agda
 Disc-diagram
-  : ∀ {X : Set ℓ} ⦃ _ : Discrete ∣ X ∣ ⦄
-  → (∣ X ∣ → Ob C)
-  → Functor (Disc' X) C
-Disc-diagram {C = C} {X = X} ⦃ d ⦄ f = F where
+  : {X : Type ℓ} ⦃ d : Discrete X ⦄ {@(tactic hlevel-tactic-worker) h : is-groupoid X} 
+  → (X → Ob C)
+  → Functor (Disc! X) C
+Disc-diagram {C = C} {X = X} ⦃ d = d ⦄ f = F where
   module C = Precategory C
 
-  P : ∣ X ∣ → ∣ X ∣ → Type _
+  P : X → X → Type _
   P x y = C.Hom (f x) (f y)
 
-  go : ∀ {x y : ∣ X ∣} → x ≡ y → Dec (x ≡ᵢ y) → P x y
+  go : ∀ {x y : X} → x ≡ y → Dec (x ≡ᵢ y) → P x y
   go {x} {.x} p (yes reflᵢ) = C.id
   go {x} {y}  p (no ¬p)     = absurd (¬p (Id≃path.from p))
 ```
@@ -145,15 +144,15 @@ computations with equalities and a whole waterfall of absurd cases:
 <!--
 ```
 Disc-adjunct
-  : ∀ {iss : is-groupoid X}
+  : {X : Type ℓ} {@(tactic hlevel-tactic-worker) h : is-groupoid X}
   → (X → Ob C)
-  → Functor (Disc X iss) C
+  → Functor (Disc! X) C
 Disc-adjunct {C = C} F .F₀ = F
 Disc-adjunct {C = C} F .F₁ p = subst (C .Hom (F _) ⊙ F) p (C .id)
 Disc-adjunct {C = C} F .F-id = transport-refl _
-Disc-adjunct {C = C} {iss = iss} F .F-∘ {x} {y} {z} f g = path where
+Disc-adjunct {C = C} F .F-∘ {x} {y} {z} f g = path where
   import Cat.Reasoning C as C
-  go = Disc-adjunct {C = C} {iss} F .F₁
+  go = Disc-adjunct {C = C} F .F₁
   abstract
     path : go (g ∙ f) ≡ C ._∘_ (go f) (go g)
     path =
@@ -178,8 +177,8 @@ Disc-into X F F₁ .F-∘ _ _ = X .is-tr _ _ _ _
 <!--
 ```agda
 Disc-natural
-  : ∀ {X : Set ℓ}
-  → {F G : Functor (Disc' X) C}
+  : {X : Type ℓ} {h : is-groupoid X}
+  → {F G : Functor (Disc! X) C}
   → (∀ x → C .Hom (F .F₀ x) (G .F₀ x))
   → F => G
 Disc-natural fam .η = fam

@@ -521,7 +521,7 @@ Let's begin. The `Total-space`{.Agda} functor gets out of our way very
 fast:
 
 ```agda
-  Total-space : Functor Cat[ Disc' I , Sets ℓ ] (Slice (Sets ℓ) I)
+  Total-space : Functor Cat[ Disc! I , Sets ℓ ] (Slice (Sets ℓ) I)
   Total-space .F₀ F .domain = el (Σ _ (∣_∣ ⊙ F₀ F)) hlevel!
   Total-space .F₀ F .map    = fst
 

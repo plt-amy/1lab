@@ -40,7 +40,7 @@ module _ {I : Type ℓ'} (i-is-grpd : is-groupoid I) (F : I → Ob) where
   open _=>_
 
   Inj→Cocone : ∀ {x} → (∀ i → Hom (F i) x)
-             → Disc-adjunct {C = C} {iss = i-is-grpd} F => Const x
+             → Disc-adjunct {C = C} F => Const x
   Inj→Cocone inj .η i = inj i
   Inj→Cocone inj .is-natural i j p =
     J (λ j p → inj j ∘ subst (Hom (F i) ⊙ F) p id ≡ id ∘ inj i)
@@ -68,7 +68,7 @@ module _ {I : Type ℓ'} (i-is-grpd : is-groupoid I) (F : I → Ob) where
 
   is-colimit→is-indexed-coprduct
     : ∀ {K : Functor ⊤Cat C}
-    → {eps : Disc-adjunct {iss = i-is-grpd} F => K F∘ !F}
+    → {eps : Disc-adjunct F => K F∘ !F}
     → is-lan !F (Disc-adjunct F) K eps
     → is-indexed-coproduct C F (eps .η)
   is-colimit→is-indexed-coprduct {K = K} {eps} colim = ic where
@@ -87,13 +87,13 @@ module _ {I : Type ℓ'} (i-is-grpd : is-groupoid I) (F : I → Ob) where
 
   IC→Colimit
     : Indexed-coproduct C F
-    → Colimit {C = C} (Disc-adjunct {iss = i-is-grpd} F)
+    → Colimit {C = C} (Disc-adjunct F)
   IC→Colimit ic =
     to-colimit (is-indexed-coproduct→is-colimit has-is-ic)
     where open Indexed-coproduct ic
 
   Colimit→IC
-    : Colimit {C = C} (Disc-adjunct {iss = i-is-grpd} F)
+    : Colimit {C = C} (Disc-adjunct F)
     → Indexed-coproduct C F
   Colimit→IC colim .Indexed-coproduct.ΣF = _
   Colimit→IC colim .Indexed-coproduct.ι = _
