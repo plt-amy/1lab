@@ -580,6 +580,13 @@ instance
     → Funlike (F => G) ⌞ C ⌟ (λ x → D .Precategory.Hom (F # x) (G # x))
   Funlike-natural-transformation = record { _#_ = _=>_.η }
 
+_⟪_⟫_
+  : ∀ {o ℓ o' ℓ'} {C : Precategory o ℓ} {D : Precategory o' ℓ'}
+  → (F : Functor C D) {U V : ⌞ C ⌟}
+  → C .Precategory.Hom U V
+  → D .Precategory.Hom (F # U) (F # V)
+_⟪_⟫_ F f = Functor.F₁ F f
+
 {-
 Set-up for using natural transformations with the extensionality tactic;
 See the docs in 1Lab.Extensionality for a more detailed explanation of

@@ -634,21 +634,6 @@ J-refl {x = x} P prefl i = transport-filler (λ i → P _ (λ j → x)) prefl (~
 ```agda
 inspect : ∀ {a} {A : Type a} (x : A) → Singleton x
 inspect x = x , refl
-
-record Recall
-  {a b} {A : Type a} {B : A → Type b}
-  (f : (x : A) → B x) (x : A) (y : B x)
-  : Type (a ⊔ b)
-  where
-    constructor ⟪_⟫
-    field
-      eq : f x ≡ y
-
-recall
-  : ∀ {a b} {A : Type a} {B : A → Type b}
-  → (f : (x : A) → B x) (x : A)
-  → Recall f x (f x)
-recall f x = ⟪ refl ⟫
 ```
 -->
 

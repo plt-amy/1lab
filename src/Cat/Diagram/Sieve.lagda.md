@@ -22,7 +22,7 @@ module _ {o κ : _} (C : Precategory o κ) (c : ⌞ C ⌟) where
 ```
 -->
 
-# Sieves
+# Sieves {defines="sieve"}
 
 Given a category $\cC$, a **sieve** on an object $c$ Is a subset of
 the maps $a \to c$ closed under composition: If $f \in S$, then $(f
@@ -35,17 +35,15 @@ representing inclusion in the subset.
 
 ```agda
   record Sieve : Type (o ⊔ κ) where
+    no-eta-equality
     field
       arrows : ∀ {y} → ℙ (C.Hom y c)
-      closed : ∀ {y z f} (g : C.Hom y z) → f ∈ arrows → (f C.∘ g) ∈ arrows
+      closed : ∀ {y z f} (hf : f ∈ arrows) (g : C.Hom y z) → (f C.∘ g) ∈ arrows
   open Sieve public
 ```
 
 <!--
 ```agda
-instance
-  Membership-Sieve : ∀ {o ℓ} {C : Precategory o ℓ} {c d} → Membership (C .Precategory.Hom d c) (Sieve C c) _
-  Membership-Sieve = record { _∈_ = λ x S → x ∈ S .Sieve.arrows }
 ```
 -->
 
@@ -60,10 +58,29 @@ subobjects.
 
 <!--
 ```agda
-module _ {o κ : _} (C : Precategory o κ) (c : ⌞ C ⌟) where
+module _ {o ℓ : _} {C : Precategory o ℓ} where
   private
     module C   = Cat.Reasoning C
-    module PSh = Cat.Reasoning (PSh κ C)
+    module PSh = Cat.Reasoning (PSh ℓ C)
+
+  Sieve-path : ∀ {c} {x y : Sieve C c} → Path (∀ {y} → ℙ (C.Hom y c)) (x .arrows) (y .arrows) → x ≡ y
+  Sieve-path {x = x} {y} p i .arrows = p i
+  Sieve-path {x = x} {y} p i .closed {f = f} hf g =
+    is-prop→pathp (λ i → fun-is-hlevel {A = ⌞ p i f ⌟} 1 (p i (f C.∘ g) .is-tr)) (λ w → x .closed w g) (λ w → y .closed w g) i hf
+
+  Extensional-sieve : ∀ {ℓr c} ⦃ _ : Extensional (∀ {y} → C.Hom y c → Ω) ℓr ⦄ → Extensional (Sieve C c) ℓr
+  Extensional-sieve ⦃ e ⦄ = injection→extensional! Sieve-path e
+
+  instance
+    Membership-Sieve : ∀ {c d} → Membership (C.Hom d c) (Sieve C c) _
+    Membership-Sieve = record { _∈_ = λ x S → x ∈ S .Sieve.arrows }
+
+    Extensionality-sieve : ∀ {c} → Extensionality (Sieve C c)
+    Extensionality-sieve = record { lemma = quote Extensional-sieve }
+
+    H-Level-Sieve : ∀ {c n} → H-Level (Sieve C c) (2 + n)
+    H-Level-Sieve = basic-instance 2 $
+      embedding→is-hlevel 1 (injective→is-embedding! Sieve-path) (hlevel 2)
 
   open PSh._↪_
   open _=>_
@@ -72,16 +89,16 @@ module _ {o κ : _} (C : Precategory o κ) (c : ⌞ C ⌟) where
 -->
 
 ```agda
-  maximal' : Sieve C c
+  maximal' : ∀ {c} → Sieve C c
   maximal' .arrows x = ⊤Ω
   maximal' .closed g x = tt
 
-  intersect : ∀ {I : Type κ} (F : I → Sieve C c) → Sieve C c
+  intersect : ∀ {c} {I : Type ℓ} (F : I → Sieve C c) → Sieve C c
   intersect {I = I} F .arrows h = elΩ ((x : I) → h ∈ F x)
-  intersect {I = I} F .closed g x = inc λ i → F i .closed g (out! x i)
+  intersect {I = I} F .closed x g = inc λ i → F i .closed (out! x i) g
 ```
 
-## Representing subfunctors
+## Representing subfunctors {defines="sieves-as-presheaves"}
 
 Let $S$ be a sieve on $\cC$. We show that it determines a presheaf
 $S'$, and that this presheaf admits a monic natural transformation $S'
@@ -90,9 +107,9 @@ $d$ to the set of arrows $d \xto{f} c$ s.t. $f \in S$; The functorial
 action is given by composition, as with the $\hom$ functor.
 
 ```agda
-  to-presheaf : Sieve C c → PSh.Ob
-  to-presheaf sieve .F₀ d = el! (Σ[ f ∈ C.Hom d c ] (f ∈ sieve))
-  to-presheaf sieve .F₁ f (g , s) = g C.∘ f , sieve .closed _ s
+  to-presheaf : ∀ {c} → Sieve C c → PSh.Ob
+  to-presheaf {c} sieve .F₀ d = el! (Σ[ f ∈ C.Hom d c ] (f ∈ sieve))
+  to-presheaf sieve .F₁ f (g , s) = g C.∘ f , sieve .closed s _
 ```
 
 <!--
@@ -109,8 +126,32 @@ proposition). Since natural transformations are monic if they are
 componentwise monic, and embeddings are monic, the result follows.
 
 ```agda
-  to-presheaf↪よ : {S : Sieve C c} → to-presheaf S PSh.↪ よ₀ C c
+  to-presheaf↪よ : ∀ {c} {S : Sieve C c} → to-presheaf S PSh.↪ よ₀ C c
   to-presheaf↪よ {S} .mor .η x (f , _) = f
   to-presheaf↪よ {S} .mor .is-natural x y f = refl
   to-presheaf↪よ {S} .monic g h path = ext λ i x → Σ-prop-path! (unext path i x)
+```
+
+## Pullback of sieves
+
+```agda
+  pullback : ∀ {u v} → C.Hom v u → Sieve C u → Sieve C v
+  pullback f s .arrows h = el (f C.∘ h ∈ s) hlevel!
+  pullback f s .closed hf g = subst (_∈ s) (sym (C.assoc f _ g)) (s .closed hf g)
+
+  pullback-id : ∀ {c} {s : Sieve C c} → pullback C.id s ≡ s
+  pullback-id {s = s} = ext λ h → Ω-ua (subst (_∈ s) (C.idl h)) (subst (_∈ s) (sym (C.idl h)))
+
+  pullback-∘
+    : ∀ {u v w} {f : C.Hom w v} {g : C.Hom v u} {R : Sieve C u}
+    → pullback (g C.∘ f) R ≡ pullback f (pullback g R)
+  pullback-∘ {f = f} {g} {R = R} = ext λ h →
+    Ω-ua (subst (_∈ R) (sym (C.assoc g f h))) (subst (_∈ R) (C.assoc g f h))
+
+  Sieves : Functor (C ^op) (Sets (o ⊔ ℓ))
+  Sieves .F₀ U .∣_∣ = Sieve C U
+  Sieves .F₀ U .is-tr = hlevel 2
+  Sieves .F₁ = pullback
+  Sieves .F-id    = funext λ x → pullback-id
+  Sieves .F-∘ f g = funext λ x → pullback-∘
 ```
