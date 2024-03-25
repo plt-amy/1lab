@@ -22,7 +22,7 @@ module _ {o κ : _} (C : Precategory o κ) (c : ⌞ C ⌟) where
 ```
 -->
 
-# Sieves
+# Sieves {defines="sieve"}
 
 Given a category $\cC$, a **sieve** on an object $c$ Is a subset of
 the maps $a \to c$ closed under composition: If $f \in S$, then $(f
@@ -98,7 +98,7 @@ module _ {o ℓ : _} {C : Precategory o ℓ} where
   intersect {I = I} F .closed x g = inc λ i → F i .closed (out! x i) g
 ```
 
-## Representing subfunctors
+## Representing subfunctors {defines="sieves-as-presheaves"}
 
 Let $S$ be a sieve on $\cC$. We show that it determines a presheaf
 $S'$, and that this presheaf admits a monic natural transformation $S'

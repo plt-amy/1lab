@@ -22,7 +22,7 @@ open _=>_
 ```
 -->
 
-# Colimits via cocones
+# Colimits via cocones {defines="cocone"}
 
 As noted in the main page on [[colimits]], most introductory texts opt
 to define colimits via categorical gadgets called **cocones**. A

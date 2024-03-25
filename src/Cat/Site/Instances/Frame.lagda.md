@@ -23,14 +23,14 @@ open Frame isf
 ```
 -->
 
-# Frames as sites
+# Frames as sites {defines="frames-as-sites"}
 
 ```agda
-frame-coverage : Coverage (poset→category P) (lsuc o)
-frame-coverage .covers U = Σ[ I ∈ Type o ] Σ[ f ∈ (I → ⌞ P ⌟) ] (⋃ f ≡ U)
-frame-coverage .cover (I , f , _) .arrows {V} V≤U = elΩ (Σ[ i ∈ I ] (V ≤ f i))
-frame-coverage .cover (I , f , _) .closed hf g = □-map (λ (i , q) → i , (≤-trans g q)) hf
-frame-coverage .stable {U} {V} (I , f , p) g =
+Frame-coverage : Coverage (poset→category P) (lsuc o)
+Frame-coverage .covers U = Σ[ I ∈ Type o ] Σ[ f ∈ (I → ⌞ P ⌟) ] (⋃ f ≡ U)
+Frame-coverage .cover (I , f , _) .arrows {V} V≤U = elΩ (Σ[ i ∈ I ] (V ≤ f i))
+Frame-coverage .cover (I , f , _) .closed hf g = □-map (λ (i , q) → i , (≤-trans g q)) hf
+Frame-coverage .stable {U} {V} (I , f , p) g =
   let
     covers : ⋃ (λ i → f i ∩ V) ≡ V
     covers =
