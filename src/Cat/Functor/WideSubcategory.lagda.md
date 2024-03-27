@@ -88,25 +88,19 @@ module _ {o h} {C : Precategory o h} where
   Wide-hom-path {sub = sub} {f = f} {g = g} p i .witness =
     is-prop→pathp (λ i → sub .P-prop (p i)) (f .witness) (g .witness) i
 
-  Extensional-wide-hom
-    : ∀ {ℓ ℓr} {sub : Wide-subcat C ℓ} {x y : C.Ob}
-    → ⦃ sa : Extensional (C.Hom x y) ℓr ⦄
-    → Extensional (Wide-hom sub x y) ℓr
-  Extensional-wide-hom ⦃ sa ⦄ = injection→extensional!
-    Wide-hom-path sa
-
   instance
-    extensionality-wide-hom
-      : ∀ {ℓ} {sub : Wide-subcat C ℓ} {x y : C.Ob} → Extensionality (Wide-hom sub x y)
-    extensionality-wide-hom = record { lemma = quote Extensional-wide-hom }
+    Extensional-wide-hom
+      : ∀ {ℓ ℓr} {sub : Wide-subcat C ℓ} {x y : C.Ob}
+      → ⦃ sa : Extensional (C.Hom x y) ℓr ⦄
+      → Extensional (Wide-hom sub x y) ℓr
+    Extensional-wide-hom ⦃ sa ⦄ = injection→extensional! Wide-hom-path sa
 
-  Wide-hom-is-set
-    : {sub : Wide-subcat C ℓ}
-    → {x y : C.Ob}
-    → is-set (Wide-hom sub x y)
-  Wide-hom-is-set {sub = sub} = Iso→is-hlevel 2 eqv $
-    Σ-is-hlevel 2 (C.Hom-set _ _) λ f → is-hlevel-suc 1 (sub .P-prop f)
-    where unquoteDecl eqv = declare-record-iso eqv (quote Wide-hom)
+    H-Level-Wide-hom
+      : ∀ {sub : Wide-subcat C ℓ} {x y : C.Ob} {n}
+      → H-Level (Wide-hom sub x y) (2 + n)
+    H-Level-Wide-hom {sub = sub} = basic-instance 2 $ Iso→is-hlevel 2 eqv $
+      Σ-is-hlevel 2 (C.Hom-set _ _) λ f → is-hlevel-suc 1 (sub .P-prop f)
+      where unquoteDecl eqv = declare-record-iso eqv (quote Wide-hom)
 ```
 -->
 
@@ -116,7 +110,7 @@ We can then use this data to construct a category.
   Wide : Wide-subcat C ℓ → Precategory o (h ⊔ ℓ)
   Wide sub .Ob = C.Ob
   Wide sub .Hom         = Wide-hom sub
-  Wide sub .Hom-set _ _ = Wide-hom-is-set
+  Wide sub .Hom-set _ _ = hlevel 2
 
   Wide sub .id .hom     = C.id
   Wide sub .id .witness = sub .P-id

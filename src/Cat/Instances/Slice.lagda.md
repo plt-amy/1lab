@@ -128,24 +128,17 @@ says that the map $h$ "respects reindexing", or less obliquely
              → x ≡ y
   /-Hom-path = /-Hom-pathp refl refl
 
-  Extensional-/-Hom
-    : ∀ {c a b ℓ} ⦃ sa : Extensional (C.Hom (/-Obj.domain a) (/-Obj.domain b)) ℓ ⦄
-    → Extensional (/-Hom {c = c} a b) ℓ
-  Extensional-/-Hom ⦃ sa ⦄ = injection→extensional! (/-Hom-pathp refl refl) sa
-
-  instance
-    extensionality-/-hom : ∀ {c a b} → Extensionality (/-Hom {c = c} a b)
-    extensionality-/-hom = record { lemma = quote Extensional-/-Hom }
-
   private unquoteDecl eqv = declare-record-iso eqv (quote /-Hom)
 
-  abstract
-    /-Hom-is-set : ∀ {c a b} → is-set (/-Hom {c = c} a b)
-    /-Hom-is-set {a = a} {b} = hl where abstract
-      open C.HLevel-instance
+  instance
+    Extensional-/-Hom
+      : ∀ {c a b ℓ} ⦃ sa : Extensional (C.Hom (/-Obj.domain a) (/-Obj.domain b)) ℓ ⦄
+      → Extensional (/-Hom {c = c} a b) ℓ
+    Extensional-/-Hom ⦃ sa ⦄ = injection→extensional! (/-Hom-pathp refl refl) sa
 
-      hl : is-set (/-Hom a b)
-      hl = Iso→is-hlevel 2 eqv (hlevel 2)
+    abstract
+      H-Level-/-Hom : ∀ {c a b n} → H-Level (/-Hom {c = c} a b) (2 + n)
+      H-Level-/-Hom = basic-instance 2 (Iso→is-hlevel 2 eqv (hlevel 2))
 ```
 -->
 
@@ -163,7 +156,7 @@ Slice C c = precat where
   precat : Precategory _ _
   precat .Ob = /-Obj {C = C} c
   precat .Hom = /-Hom
-  precat .Hom-set x y = /-Hom-is-set
+  precat .Hom-set x y = hlevel 2
   precat .id .map      = C.id
   precat .id .commutes = C.idr _
 ```

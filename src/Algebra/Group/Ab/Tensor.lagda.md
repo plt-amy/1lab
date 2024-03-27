@@ -94,12 +94,10 @@ module _ {A : Abelian-group ℓ} {B : Abelian-group ℓ'} {C : Abelian-group ℓ
       q i .pres-*r x y z = is-prop→pathp (λ i → C.has-is-set (p x (y B.* z) i) (p x y i C.* p x z i))
         (ba .pres-*r x y z) (bb .pres-*r x y z) i
 
-  Extensional-bilinear : ∀ {ℓr} ⦃ ef : Extensional (⌞ A ⌟ → ⌞ B ⌟ → ⌞ C ⌟) ℓr ⦄ → Extensional (Bilinear A B C) ℓr
-  Extensional-bilinear ⦃ ef ⦄ = injection→extensional! (λ h → Bilinear-path (λ x y → h # x # y)) ef
-
   instance
-    extensionality-bilinear : Extensionality (Bilinear A B C)
-    extensionality-bilinear = record { lemma = quote Extensional-bilinear }
+    Extensional-bilinear
+      : ∀ {ℓr} ⦃ ef : Extensional (⌞ A ⌟ → ⌞ B ⌟ → ⌞ C ⌟) ℓr ⦄ → Extensional (Bilinear A B C) ℓr
+    Extensional-bilinear ⦃ ef ⦄ = injection→extensional! (λ h → Bilinear-path (λ x y → h # x # y)) ef
 
 module _ {ℓ} (A B C : Abelian-group ℓ) where
 ```
@@ -314,6 +312,16 @@ an equivalence requires appealing to an induction principle of
 
   module Bilinear≃Hom = Equiv Bilinear≃Hom
   module Hom≃Bilinear = Equiv Hom≃Bilinear
+
+module _ {ℓ} {A B C : Abelian-group ℓ} where instance
+  Extensional-tensor-hom
+    : ∀ {ℓr} ⦃ ef : Extensional (⌞ A ⌟ → ⌞ B ⌟ → ⌞ C ⌟) ℓr ⦄ → Extensional (Ab.Hom (A ⊗ B) C) ℓr
+  Extensional-tensor-hom ⦃ ef ⦄ =
+    injection→extensional! {B = ⌞ A ⌟ → ⌞ B ⌟ → ⌞ C ⌟}
+      {f = λ f x y → f .hom (x , y)}
+      (λ {x} p → Hom≃Bilinear.injective _ _ _ (ext (subst (ef .Pathᵉ _) p (ef .reflᵉ _))))
+      auto
+  {-# OVERLAPS Extensional-tensor-hom #-}
 ```
 -->
 
@@ -342,8 +350,8 @@ Ab-tensor-functor .F₁ (f , g) = from-bilinear-map _ _ _ bilin where
   bilin .Bilinear.map x y       = f # x , g # y
   bilin .Bilinear.pres-*l x y z = ap (_, g # z) (f .preserves .is-group-hom.pres-⋆ _ _) ∙ t-pres-*l
   bilin .Bilinear.pres-*r x y z = ap (f # x ,_) (g .preserves .is-group-hom.pres-⋆ _ _) ∙ t-pres-*r
-Ab-tensor-functor .F-id    = Hom≃Bilinear.injective _ _ _ trivial!
-Ab-tensor-functor .F-∘ f g = Hom≃Bilinear.injective _ _ _ trivial!
+Ab-tensor-functor .F-id    = trivial!
+Ab-tensor-functor .F-∘ f g = trivial!
 
 Tensor⊣Hom : (A : Abelian-group ℓ) → Bifunctor.Left Ab-tensor-functor A ⊣ Bifunctor.Right Ab-hom-functor A
 Tensor⊣Hom A = hom-iso→adjoints to to-eqv nat where

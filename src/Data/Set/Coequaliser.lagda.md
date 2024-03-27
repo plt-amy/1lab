@@ -536,21 +536,28 @@ is a set, that means it's an equivalence.
 
 <!--
 ```agda
-Extensional-coeq-map
-  : ∀ {ℓ ℓ' ℓ'' ℓr} {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''} {f g : A → B}
-  → ⦃ sf : Extensional (B → C) ℓr ⦄ {@(tactic hlevel-tactic-worker) c-set : is-set C}
-  → Extensional (Coeq f g → C) ℓr
-Extensional-coeq-map ⦃ sf ⦄ .Pathᵉ f g = sf .Pathᵉ (f ∘ inc) (g ∘ inc)
-Extensional-coeq-map ⦃ sf ⦄ .reflᵉ f = sf .reflᵉ (f ∘ inc)
-Extensional-coeq-map ⦃ sf ⦄ {c-set} .idsᵉ .to-path h = funext $
-  Coeq-elim-prop (λ x → c-set _ _) (happly (sf .idsᵉ .to-path h))
-Extensional-coeq-map ⦃ sf ⦄ {c-set} .idsᵉ .to-path-over p =
-  is-prop→pathp (λ i → Pathᵉ-is-hlevel 1 sf (fun-is-hlevel 2 c-set)) _ _
-
 instance
-  extensionality-coeq-map
-    : ∀ {ℓ ℓ' ℓ''} {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''} {f g : A → B}
-    → Extensionality (Coeq f g → C)
-  extensionality-coeq-map = record { lemma = quote Extensional-coeq-map }
+  Extensional-coeq-map
+    : ∀ {ℓ ℓ' ℓ'' ℓr} {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''} {f g : A → B}
+    → ⦃ sf : Extensional (B → C) ℓr ⦄ {@(tactic hlevel-tactic-worker) c-set : is-set C}
+    → Extensional (Coeq f g → C) ℓr
+  Extensional-coeq-map ⦃ sf ⦄ .Pathᵉ f g = sf .Pathᵉ (f ∘ inc) (g ∘ inc)
+  Extensional-coeq-map ⦃ sf ⦄ .reflᵉ f = sf .reflᵉ (f ∘ inc)
+  Extensional-coeq-map ⦃ sf ⦄ {c-set} .idsᵉ .to-path h = funext $
+    Coeq-elim-prop (λ x → c-set _ _) (happly (sf .idsᵉ .to-path h))
+  Extensional-coeq-map ⦃ sf ⦄ {c-set} .idsᵉ .to-path-over p =
+    is-prop→pathp (λ i → Pathᵉ-is-hlevel 1 sf (fun-is-hlevel 2 c-set)) _ _
+
+private module test where
+  variable C : Type ℓ
+
+  _ : {f g : A / R → B} ⦃ _ : H-Level B 2 ⦄
+    → ((x : A) → f (inc x) ≡ g (inc x)) → f ≡ g
+  _ = ext
+
+  _ : {f g : (A × B) / R → C} ⦃ _ : H-Level C 2 ⦄
+    → ((x : A) (y : B) → f (inc (x , y)) ≡ g (inc (x , y)))
+    → f ≡ g
+  _ = ext
 ```
 -->

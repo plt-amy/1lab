@@ -305,7 +305,7 @@ usedInstances =
       I.Def q _ -> do
         def <- getConstInfo q
         case Agda.Compiler.Backend.defInstance def of
-          Just c  -> Set.insert q <$> getClass c
+          Just c  -> Set.insert q <$> getClass (instanceClass c)
           Nothing -> pure mempty
       _ -> pure mempty
 

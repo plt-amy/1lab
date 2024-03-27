@@ -412,6 +412,7 @@ open Mod
     ; Module-on→Abelian-group-on
     ; H-Level-is-linear-map
     ; H-Level-is-module
+    ; H-Level-Linear-map
     )
   public
 
@@ -428,18 +429,16 @@ module _ {ℓ} {R : Ring ℓ} where
       ; Module-on→Abelian-group-on
       ; H-Level-is-linear-map
       ; H-Level-is-module
+      ; H-Level-Linear-map
       )
     public
 
-  Extensional-linear-map
-    : ∀ {ℓr} {M : Module R ℓm} {N : Module R ℓn}
-    → ⦃ ext : Extensional (⌞ M ⌟ → ⌞ N ⌟) ℓr ⦄
-    → Extensional (Linear-map M N) ℓr
-  Extensional-linear-map ⦃ ext ⦄ = injection→extensional! (λ p → Linear-map-path (happly p)) ext
-
   instance
-    extensionality-linear-map : {M : Module R ℓm} {N : Module R ℓn} → Extensionality (Linear-map M N)
-    extensionality-linear-map = record { lemma = quote Extensional-linear-map }
+    Extensional-linear-map
+      : ∀ {ℓr} {M : Module R ℓm} {N : Module R ℓn}
+      → ⦃ ext : Extensional (⌞ M ⌟ → ⌞ N ⌟) ℓr ⦄
+      → Extensional (Linear-map M N) ℓr
+    Extensional-linear-map ⦃ ext ⦄ = injection→extensional! (λ p → Linear-map-path (happly p)) ext
 
 module R-Mod {ℓ ℓm} {R : Ring ℓ} = Cat.Reasoning (R-Mod R ℓm)
 
@@ -456,5 +455,14 @@ linear-map→hom
   → R-Mod.Hom M N
 linear-map→hom h .hom       = h .map
 linear-map→hom h .preserves = h .lin
+
+extensional-mod-hom
+  : ∀ {ℓ ℓrel} {R : Ring ℓ} {M : Module R ℓm} {N : Module R ℓm}
+  → ⦃ ext : Extensional (Linear-map M N) ℓrel ⦄
+  → Extensional (R-Mod R _ .Precategory.Hom M N) ℓrel
+extensional-mod-hom ⦃ ei ⦄ = injection→extensional! {f = hom→linear-map} (λ p → ext λ e → ap map p $ₚ e) ei
+
+instance Extensional-mod-hom = extensional-mod-hom
+{-# OVERLAPS Extensional-mod-hom #-}
 ```
 -->

@@ -75,24 +75,24 @@ space of `Element-hom`{.Agda}.
 
 <!--
 ```agda
-  private unquoteDecl eqv = declare-record-iso eqv (quote Element-hom)
-  Element-hom-is-set : ∀ (x y : Element) → is-set (Element-hom x y)
-  Element-hom-is-set x y = Iso→is-hlevel 2 eqv T-is-set where
-    T-is-set : is-set _
-    T-is-set = hlevel!
 
-Extensional-element-hom
-  : ∀ {o ℓ s} {C : Precategory o ℓ} {P : Functor (C ^op) (Sets s)} {x y : Element C P} {ℓr}
-  → ⦃ ext : Extensional (C .Precategory.Hom (Element.ob x) (y .Element.ob)) ℓr ⦄
-  → Extensional (Element-hom C P x y) ℓr
-Extensional-element-hom {C = C} {P} ⦃ ext ⦄ = injection→extensional
-  (C .Precategory.Hom-set _ _) (Element-hom-path C P) ext
+module _ {o ℓ s} {C : Precategory o ℓ} {P : Functor (C ^op) (Sets s)} where instance
+  open Element
 
-instance
-  extensionality-element-hom
-    : ∀ {o ℓ s} {C : Precategory o ℓ} {P : Functor (C ^op) (Sets s)} {x y}
-    → Extensionality (Element-hom C P x y)
-  extensionality-element-hom = record { lemma = quote Extensional-element-hom }
+  Extensional-element-hom
+    : ∀ {x y : Element C P} {ℓr}
+    → ⦃ ext : Extensional (C .Precategory.Hom (x .ob) (y .ob)) ℓr ⦄
+    → Extensional (Element-hom C P x y) ℓr
+  Extensional-element-hom ⦃ ext ⦄ = injection→extensional
+    (C .Precategory.Hom-set _ _) (Element-hom-path C P) ext
+
+  open Precategory C
+
+  H-Level-Element-hom
+    : ∀ {x y : Element C P} {n}
+    → H-Level (Element-hom C P x y) (2 + n)
+  H-Level-Element-hom = basic-instance 2 $ Iso→is-hlevel 2 eqv hlevel!
+    where unquoteDecl eqv = declare-record-iso eqv (quote Element-hom)
 
 module _ {o ℓ s} (C : Precategory o ℓ) (P : Functor (C ^op) (Sets s)) where
   private module P = Functor P
@@ -119,7 +119,7 @@ $P$!
   ∫ : Precategory (o ⊔ s) (ℓ ⊔ s)
   ∫ .Precategory.Ob = Element C P
   ∫ .Precategory.Hom = Element-hom C P
-  ∫ .Precategory.Hom-set = Element-hom-is-set C P
+  ∫ .Precategory.Hom-set _ _ = hlevel 2
   ∫ .Precategory.id {x = x} = elem-hom id λ i → P.F-id i (x .section)
   ∫ .Precategory._∘_ {x = x} {y = y} {z = z} f g = elem-hom (f .hom ∘ g .hom) comm where abstract
     comm : P.₁ (f .hom ∘ g .hom) (z .section) ≡ x .section

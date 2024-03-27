@@ -25,5 +25,3 @@ open import Cat.Univalent
         ; Hom-transport ; Hom-pathp-refll ; Hom-pathp-reflr
         ; module Univalent )
   public
-
-open import Cat.Morphism.Extensionality public

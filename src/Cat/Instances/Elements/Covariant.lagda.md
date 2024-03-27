@@ -70,18 +70,19 @@ Thus we proceed to dualise the whole construction.
       (f .commute)
       (g .commute) i
 
-Extensional-element-hom
-  : ∀ {o ℓ s} {C : Precategory o ℓ} {P : Functor C (Sets s)} {x y : Element P} {ℓr}
-  → ⦃ ext : Extensional (C .Precategory.Hom (Element.ob x) (y .Element.ob)) ℓr ⦄
-  → Extensional (Element-hom P x y) ℓr
-Extensional-element-hom {C = C} {P} ⦃ ext ⦄ = injection→extensional
-  (C .Precategory.Hom-set _ _) (Element-hom-path P) ext
+module _ {o ℓ s} {C : Precategory o ℓ} {P : Functor C (Sets s)} where instance
+  Extensional-element-hom
+    : ∀ {x y : Element P} {ℓr}
+    → ⦃ ext : Extensional (C .Precategory.Hom (x .Element.ob) (y .Element.ob)) ℓr ⦄
+    → Extensional (Element-hom P x y) ℓr
+  Extensional-element-hom ⦃ ext ⦄ = injection→extensional
+    (C .Precategory.Hom-set _ _) (Element-hom-path P) ext
 
-instance
-  extensionality-element-hom
-    : ∀ {o ℓ s} {C : Precategory o ℓ} {P : Functor C (Sets s)} {x y}
-    → Extensionality (Element-hom P x y)
-  extensionality-element-hom = record { lemma = quote Extensional-element-hom }
+  open Precategory C
+
+  H-Level-element-hom : ∀ {x y : Element P} {n} → H-Level (Element-hom P x y) (2 + n)
+  H-Level-element-hom = basic-instance 2 $ Iso→is-hlevel 2 eqv hlevel!
+    where unquoteDecl eqv = declare-record-iso eqv (quote Element-hom)
 
 module _ {o ℓ s} {C : Precategory o ℓ} (P : Functor C (Sets s)) where
   private module P = Functor P
@@ -97,7 +98,7 @@ module _ {o ℓ s} {C : Precategory o ℓ} (P : Functor C (Sets s)) where
   ∫ : Precategory (o ⊔ s) (ℓ ⊔ s)
   ∫ .Precategory.Ob = Element P
   ∫ .Precategory.Hom = Element-hom P
-  ∫ .Precategory.Hom-set = Element-hom-is-set P
+  ∫ .Precategory.Hom-set _ _ = hlevel 2
   ∫ .Precategory.id {x = x} = elem-hom id λ i → P.F-id i (x .section)
   ∫ .Precategory._∘_ {x = x} {y = y} {z = z} f g = elem-hom (f .hom ∘ g .hom) comm where abstract
     comm : P.₁ (f .hom ∘ g .hom) (x .section) ≡ z .section

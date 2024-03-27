@@ -77,9 +77,9 @@ Cat[ C , D ] .Pc.Hom-set F G = Nat-is-set
 Cat[ C , D ] .Pc.id  = idnt
 Cat[ C , D ] .Pc._∘_ = _∘nt_
 
-Cat[ C , D ] .Pc.idr f       = ext λ x → Pc.idr D _
-Cat[ C , D ] .Pc.idl f       = ext λ x → Pc.idl D _
-Cat[ C , D ] .Pc.assoc f g h = ext λ x → Pc.assoc D _ _ _
+Cat[ C , D ] .Pc.idr f       = ext λ x → D .Pc.idr _
+Cat[ C , D ] .Pc.idl f       = ext λ x → D .Pc.idl _
+Cat[ C , D ] .Pc.assoc f g h = ext λ x → D .Pc.assoc _ _ _
 ```
 
 We'll also need the following foundational tool, characterising paths

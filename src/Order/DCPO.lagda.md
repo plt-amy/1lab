@@ -1,6 +1,6 @@
 <!--
 ```agda
-open import Cat.Displayed.Univalence.Thin using (extensionality-hom)
+open import Cat.Displayed.Univalence.Thin
 open import Cat.Functor.Subcategory
 open import Cat.Displayed.Total
 open import Cat.Prelude

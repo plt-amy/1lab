@@ -249,34 +249,15 @@ equal-on-basis M {f} {g} p =
     module g = Linear-map g
     module M = Module-on (M .snd)
 
-Extensional-linear-map-free
-  : ∀ {ℓb ℓg ℓr} {T : Type ℓb} {M : Module R ℓg}
-  → ⦃ ext : Extensional (T → ⌞ M ⌟) ℓr ⦄
-  → Extensional (Linear-map (Free-Mod T) M) ℓr
-Extensional-linear-map-free {M = M} ⦃ ext ⦄ =
-  injection→extensional! {f = λ m x → m .map (inc x)} (λ p → equal-on-basis M (happly p)) ext
-
-Extensional-hom-free
-  : ∀ {ℓ' ℓr} {T : Type ℓ'} {M : Module R (ℓ ⊔ ℓ')}
-  → ⦃ ext : Extensional (T → ⌞ M ⌟) ℓr ⦄
-  → Extensional (R-Mod.Hom (Free-Mod T) M) ℓr
-Extensional-hom-free {M = M} ⦃ ef ⦄ =
-  injection→extensional! {f = λ m x → m # (inc x)}
-    (λ {f} {g} p →
-      let it = equal-on-basis M {hom→linear-map f} {hom→linear-map g} (happly p)
-       in ext (happly (ap map it)))
-    ef
-
 instance
-  extensionality-linear-map-free
-    : ∀ {ℓb ℓg} {T : Type ℓb} {M : Module R ℓg}
-    → Extensionality (Linear-map (Free-Mod T) M)
-  extensionality-linear-map-free = record { lemma = quote Extensional-linear-map-free }
+  Extensional-linear-map-free
+    : ∀ {ℓb ℓg ℓr} {T : Type ℓb} {M : Module R ℓg}
+    → ⦃ ext : Extensional (T → ⌞ M ⌟) ℓr ⦄
+    → Extensional (Linear-map (Free-Mod T) M) ℓr
+  Extensional-linear-map-free {M = M} ⦃ ext ⦄ =
+    injection→extensional! {f = λ m x → m .map (inc x)} (λ p → equal-on-basis M (happly p)) ext
 
-  extensionality-hom-free
-    : ∀ {ℓ'} {T : Type ℓ'} {M : Module R (ℓ ⊔ ℓ')}
-    → Extensionality (R-Mod.Hom {ℓm = ℓ ⊔ ℓ'} (Free-Mod T) M)
-  extensionality-hom-free = record { lemma = quote Extensional-hom-free }
+  {-# OVERLAPS Extensional-linear-map-free #-}
 ```
 -->
 

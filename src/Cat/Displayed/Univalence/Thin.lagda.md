@@ -128,32 +128,23 @@ module _ {ℓ o' ℓ'} {S : Type ℓ → Type o'} {spec : Thin-structure ℓ' S}
     module So = Precategory (Structured-objects spec)
     module Som = Cat.Morphism (Structured-objects spec)
 
-  Extensional-Hom
-    : ∀ {a b ℓr} ⦃ sa : Extensional (⌞ a ⌟ → ⌞ b ⌟) ℓr ⦄
-    → Extensional (So.Hom a b) ℓr
-  Extensional-Hom ⦃ sa ⦄ = injection→extensional!
-    (Structured-hom-path spec) sa
-
   instance
-    extensionality-hom : ∀ {a b} → Extensionality (So.Hom a b)
-    extensionality-hom = record { lemma = quote Extensional-Hom }
+    Extensional-Hom
+      : ∀ {a b ℓr} ⦃ sa : Extensional (⌞ a ⌟ → ⌞ b ⌟) ℓr ⦄
+      → Extensional (So.Hom a b) ℓr
+    Extensional-Hom ⦃ sa ⦄ = injection→extensional!
+      (Structured-hom-path spec) sa
 
     Funlike-Hom : ∀ {x y} → Funlike (So.Hom x y) ⌞ x ⌟ λ _ → ⌞ y ⌟
     Funlike-Hom = record
       { _#_ = Total-hom.hom
       }
 
-  Homomorphism-path
-    : ∀ {x y : So.Ob} {f g : So.Hom x y}
-    → (∀ x → f # x ≡ g # x)
-    → f ≡ g
-  Homomorphism-path h = Structured-hom-path spec (funext h)
-
   Homomorphism-monic
     : ∀ {x y : So.Ob} (f : So.Hom x y)
     → (∀ {x y} (p : f # x ≡ f # y) → x ≡ y)
     → Som.is-monic f
-  Homomorphism-monic f wit g h p = Homomorphism-path λ x → wit (ap hom p $ₚ x)
+  Homomorphism-monic f wit g h p = ext λ x → wit (ap hom p $ₚ x)
 
 record is-equational {ℓ o' ℓ'} {S : Type ℓ → Type o'} (spec : Thin-structure ℓ' S) : Type (lsuc ℓ ⊔ o' ⊔ ℓ') where
   field

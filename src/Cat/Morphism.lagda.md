@@ -1,6 +1,6 @@
 <!--
 ```agda
-open import 1Lab.Prelude hiding (_∘_ ; id ; _↪_ ; _↠_ ; module Extensionality)
+open import 1Lab.Prelude hiding (_∘_ ; id ; _↪_ ; _↠_)
 
 open import Cat.Solver
 open import Cat.Base
@@ -666,6 +666,16 @@ abstract
       (f .epic)
       (g .epic)
       i
+
+instance
+  Extensional-↪ : ∀ {a b ℓr} ⦃ _ : Extensional (Hom a b) ℓr ⦄ → Extensional (a ↪ b) ℓr
+  Extensional-↪ ⦃ sa ⦄ = injection→extensional! ↪-pathp sa
+
+  Extensional-↠ : ∀ {a b ℓr} ⦃ _ : Extensional (Hom a b) ℓr ⦄ → Extensional (a ↠ b) ℓr
+  Extensional-↠ ⦃ sa ⦄ = injection→extensional! ↠-pathp sa
+
+  Extensional-≅ : ∀ {a b ℓr} ⦃ _ : Extensional (Hom a b) ℓr ⦄ → Extensional (a ≅ b) ℓr
+  Extensional-≅ ⦃ sa ⦄ = injection→extensional! (≅-pathp refl refl) sa
 ```
 -->
 

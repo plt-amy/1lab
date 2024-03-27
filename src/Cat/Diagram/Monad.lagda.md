@@ -204,7 +204,7 @@ open Algebra-hom public
 
 open _=>_ using (η)
 
-module _ {o ℓ} {C : Precategory o ℓ} {M : Monad C} where
+module _ {o ℓ} {C : Precategory o ℓ} {M : Monad C} where instance
   private module C = Cat.Reasoning C
 
   Extensional-Algebra-Hom
@@ -214,22 +214,18 @@ module _ {o ℓ} {C : Precategory o ℓ} {M : Monad C} where
   Extensional-Algebra-Hom ⦃ sa ⦄ = injection→extensional!
     (Algebra-hom-path C) sa
 
-  instance
-    extensionality-algebra-hom
-      : ∀ {a b} {A : Algebra-on C M a} {B : Algebra-on C M b}
-      → Extensionality (Algebra-hom C M (a , A) (b , B))
-    extensionality-algebra-hom = record { lemma = quote Extensional-Algebra-Hom }
+  Funlike-Algebra-hom
+    : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} {X Y}
+    → ⦃ i : Funlike (C.Hom (X .fst) (Y .fst)) A B ⦄
+    → Funlike (Algebra-hom C M X Y) A B
+  Funlike-Algebra-hom ⦃ i ⦄ .Funlike._#_ f x = f .morphism # x
 
-  instance
-    Funlike-Algebra-hom
-      : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} {X Y}
-      → ⦃ i : Funlike (C.Hom (X .fst) (Y .fst)) A B ⦄
-      → Funlike (Algebra-hom C M X Y) A B
-    Funlike-Algebra-hom ⦃ i ⦄ .Funlike._#_ f x = f .morphism # x
+  H-Level-Algebra-hom : ∀ {A B n} → H-Level (Algebra-hom C M A B) (2 + n)
+  H-Level-Algebra-hom = basic-instance 2 $ Iso→is-hlevel 2 eqv (hlevel 2)
+    where unquoteDecl eqv = declare-record-iso eqv (quote Algebra-hom)
 
 module _ {o ℓ} (C : Precategory o ℓ) where
   private module C = Cat.Reasoning C
-  private unquoteDecl eqv = declare-record-iso eqv (quote Algebra-hom)
 ```
 -->
 
@@ -281,8 +277,7 @@ the identity and associativity laws from its underlying category.
     Eilenberg-Moore .idr f = ext (C.idr _)
     Eilenberg-Moore .idl f = ext (C.idl _)
     Eilenberg-Moore .assoc f g h = ext (C.assoc _ _ _)
-    Eilenberg-Moore .Hom-set X Y = Iso→is-hlevel 2 eqv (hlevel 2)
-      where open C.HLevel-instance
+    Eilenberg-Moore .Hom-set X Y = hlevel 2
 ```
 
 </details>

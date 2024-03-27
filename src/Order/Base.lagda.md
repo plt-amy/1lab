@@ -235,18 +235,13 @@ Monotone-pathp {P = P} {Q} {f} {g} q i .Monotone.pres-≤ {x} {y} α =
     (λ _ _ α → f .Monotone.pres-≤ α)
     (λ _ _ α → g .Monotone.pres-≤ α) i x y α
 
-Extensional-Monotone
-  : ∀ {o ℓ o' ℓ' ℓr} {P : Poset o ℓ} {Q : Poset o' ℓ'}
-  → ⦃ sa : Extensional (⌞ P ⌟ → ⌞ Q ⌟) ℓr ⦄
-  → Extensional (Monotone P Q) ℓr
-Extensional-Monotone {Q = Q} ⦃ sa ⦄ =
-  injection→extensional! Monotone-pathp sa
-
 instance
-  Extensionality-Monotone
-    : ∀ {o ℓ o' ℓ'} {P : Poset o ℓ} {Q : Poset o' ℓ'}
-    → Extensionality (Monotone P Q)
-  Extensionality-Monotone = record { lemma = quote Extensional-Monotone }
+  Extensional-Monotone
+    : ∀ {o ℓ o' ℓ' ℓr} {P : Poset o ℓ} {Q : Poset o' ℓ'}
+    → ⦃ sa : Extensional (⌞ P ⌟ → ⌞ Q ⌟) ℓr ⦄
+    → Extensional (Monotone P Q) ℓr
+  Extensional-Monotone {Q = Q} ⦃ sa ⦄ =
+    injection→extensional! Monotone-pathp sa
 ```
 -->
 
@@ -333,5 +328,4 @@ We can construct the trivial posets with one and zero (object(s), ordering(s)) r
 𝟘ᵖ .Poset.≤-refl {()}
 𝟘ᵖ .Poset.≤-trans ()
 𝟘ᵖ .Poset.≤-antisym ()
-
 ```

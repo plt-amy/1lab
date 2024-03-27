@@ -91,15 +91,12 @@ module _ {o o' ℓ ℓ'} {C : Precategory o ℓ} {S : Subcat C o' ℓ'} where
   Subcat-hom-pathp {f = f} {g = g} p q r i .witness =
     is-prop→pathp (λ i → is-hom-prop (r i) (p i .snd) (q i .snd)) (f .witness) (g .witness) i
 
-  Extensional-subcat-hom
-    : ∀ {ℓr x y} ⦃ sa : Extensional (Hom (x .fst) (y .fst)) ℓr ⦄
-    → Extensional (Subcat-hom S x y) ℓr
-  Extensional-subcat-hom ⦃ sa ⦄ = injection→extensional!
-    (Subcat-hom-pathp refl refl) sa
-
   instance
-    extensionality-subcat-hom : ∀ {x y} → Extensionality (Subcat-hom S x y)
-    extensionality-subcat-hom = record { lemma = quote Extensional-subcat-hom }
+    Extensional-subcat-hom
+      : ∀ {ℓr x y} ⦃ sa : Extensional (Hom (x .fst) (y .fst)) ℓr ⦄
+      → Extensional (Subcat-hom S x y) ℓr
+    Extensional-subcat-hom ⦃ sa ⦄ = injection→extensional!
+      (Subcat-hom-pathp refl refl) sa
 
     Funlike-Subcat-hom
       : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} {x y}

@@ -156,6 +156,8 @@ functor is fully faithful, that's equivalent to what we want.
 
 ```agda
   private module Rezk↪PSh = Ffr Rezk↪PSh id-equiv
+  open Cr Rezk-completion using (Extensional-≅)
+
   abstract
     Rezk-completion-is-category : is-category Rezk-completion
     Rezk-completion-is-category =

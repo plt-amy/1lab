@@ -304,33 +304,30 @@ $f(\day{h,x,y})$, in a way compatible with the relation above.
   -- computation rule for `factor W (day ...)` without exposing the
   -- computational behaviour of any other of the symbols here.
 
-  Extensional-day-map
-    : ∀ {i ℓ' ℓr} {C : Type ℓ'} {@(tactic hlevel-tactic-worker) c-set : is-set C}
-    → ⦃ sf : ∀ {a b} → Extensional ((h : Hom i (a ⊗ b)) (x : X ʻ a) (y : Y ʻ b) → C) ℓr ⦄
-    → Extensional (⌞ Day.nadir i ⌟ → C) (ℓ ⊔ ℓr)
-  Extensional-day-map {i} {C = C} {c-set} ⦃ sf ⦄ = done where
-    instance
-      _ : H-Level C 2
-      _ = basic-instance 2 c-set
+  instance
+    Extensional-day-map
+      : ∀ {i ℓ' ℓr} {C : Type ℓ'} {@(tactic hlevel-tactic-worker) c-set : is-set C}
+      → ⦃ sf : ∀ {a b} → Extensional ((h : Hom i (a ⊗ b)) (x : X ʻ a) (y : Y ʻ b) → C) ℓr ⦄
+      → Extensional (⌞ Day.nadir i ⌟ → C) (ℓ ⊔ ℓr)
+    Extensional-day-map {i} {C = C} {c-set} ⦃ sf ⦄ = done where
+      instance
+        _ : H-Level C 2
+        _ = basic-instance 2 c-set
 
-    T : Type _
-    T = {a b : Ob} (h : Hom i (a ⊗ b)) (x : X ʻ a) (y : Y ʻ b) → C
+      T : Type _
+      T = {a b : Ob} (h : Hom i (a ⊗ b)) (x : X ʻ a) (y : Y ʻ b) → C
 
-    unday : (⌞ Day.nadir i ⌟ → C) → T
-    unday f h x y = f (day h x y)
+      unday : (⌞ Day.nadir i ⌟ → C) → T
+      unday f h x y = f (day h x y)
 
-    opaque
-      unfolding Day-coend day
+      opaque
+        unfolding Day-coend day
 
-      to-p : ∀ {f g} → Path T (unday f) (unday g) → f ≡ g
-      to-p p = ext λ (a , b) h x y i → p i {a} {b} h x y
+        to-p : ∀ {f g} → Path T (unday f) (unday g) → f ≡ g
+        to-p p = ext λ (a , b) h x y i → p i {a} {b} h x y
 
-    done : Extensional (⌞ Day.nadir i ⌟ → C) _
-    done = injection→extensional (hlevel 2) to-p (Extensional-Π' ⦃ Extensional-Π' ⦃ sf ⦄ ⦄)
-
-  private instance
-    _ : ∀ {i ℓ'} {C : Type ℓ'} → Extensionality (⌞ Day.nadir i ⌟ → C)
-    _ = record { lemma = quote Extensional-day-map }
+      done : Extensional (⌞ Day.nadir i ⌟ → C) _
+      done = injection→extensional (hlevel 2) to-p auto
 
   day-swap
     : ∀ {i a b a' b'} {f : Hom a' a} {g : Hom b' b} {h : Hom i (a' ⊗ b')}
@@ -374,11 +371,6 @@ module _ {X Y} where
     using    (day ; day-ap ; day-apₘ ; day-swap ; Extensional-day-map ; day-glue)
     renaming (factor to Day-rec)
     public
-
-instance
-  extensionality-day-map
-    : ∀ {X Y i ℓ'} {C : Type ℓ'} → Extensionality (⌞ Day.nadir X Y i ⌟ → C)
-  extensionality-day-map = record { lemma = quote Extensional-day-map }
 
 open Day using (_⊗ᴰ_ ; Day-diagram)
 ```

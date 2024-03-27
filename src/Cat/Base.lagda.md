@@ -580,49 +580,19 @@ instance
     → Funlike (F => G) ⌞ C ⌟ (λ x → D .Precategory.Hom (F # x) (G # x))
   Funlike-natural-transformation = record { _#_ = _=>_.η }
 
-{-
-Set-up for using natural transformations with the extensionality tactic;
-See the docs in 1Lab.Extensionality for a more detailed explanation of
-how it works.
-
-This function is the actual worker which computes the preferred
-identity system for natural transformations. Its type asks for
-
-   ∀ x → Extensional (D.Hom (F # x) (G # x))
-
-instead of the more generic ∀ x y → Extensional (D.Hom x y) so that
-any specific *instances* for D.Hom involving the object parts of F and G
-have a chance to fire. E.g. if G is the product functor on Sets then
-(x → y) will only match the funext instance but (x → G # y) will
-match funext *and* product extensionality.
--}
-Extensional-natural-transformation
-  : ∀ {o ℓ o' ℓ' ℓr} {C : Precategory o ℓ} {D : Precategory o' ℓ'}
-  → {F G : Functor C D}
-  → {@(tactic extensionalᶠ {A = ⌞ C ⌟ → Type _}
-        (λ x → D .Hom (F # x) (G # x)))
-      sa : ∀ x → Extensional (D .Hom (F # x) (G # x)) ℓr}
-  → Extensional (F => G) (o ⊔ ℓr)
-Extensional-natural-transformation {sa = sa} .Pathᵉ f g = ∀ i → Pathᵉ (sa i) (f .η i) (g .η i)
-Extensional-natural-transformation {sa = sa} .reflᵉ x i = reflᵉ (sa i) (x .η i)
-Extensional-natural-transformation {sa = sa} .idsᵉ .to-path x = Nat-pathp _ _ λ i →
-  sa _ .idsᵉ .to-path (x i)
-Extensional-natural-transformation {D = D} {sa = sa} .idsᵉ .to-path-over h =
-  is-prop→pathp
-    (λ i → Π-is-hlevel 1
-      (λ _ → Equiv→is-hlevel 1 (identity-system-gives-path (sa _ .idsᵉ)) (D .Hom-set _ _ _ _)))
-    _ _
-
--- Actually define the loop-breaker instance which tells the
--- extensionality tactic what lemma to use for a type of natural
--- transformations.
-
-instance
-  extensionality-natural-transformation
-    : ∀ {o ℓ o' ℓ'} {C : Precategory o ℓ} {D : Precategory o' ℓ'}
-        {F G : Functor C D}
-    → Extensionality (F => G)
-  extensionality-natural-transformation = record
-    { lemma = quote Extensional-natural-transformation }
+  Extensional-natural-transformation
+    : ∀ {o ℓ o' ℓ' ℓr} {C : Precategory o ℓ} {D : Precategory o' ℓ'}
+    → {F G : Functor C D}
+    → ⦃ sa : {x : ⌞ C ⌟} → Extensional (D .Hom (F # x) (G # x)) ℓr ⦄
+    → Extensional (F => G) (o ⊔ ℓr)
+  Extensional-natural-transformation ⦃ sa ⦄ .Pathᵉ f g = ∀ i → Pathᵉ sa (f .η i) (g .η i)
+  Extensional-natural-transformation ⦃ sa ⦄ .reflᵉ x i = reflᵉ sa (x .η i)
+  Extensional-natural-transformation ⦃ sa ⦄ .idsᵉ .to-path x = Nat-pathp _ _ λ i →
+    sa .idsᵉ .to-path (x i)
+  Extensional-natural-transformation {D = D} ⦃ sa ⦄ .idsᵉ .to-path-over h =
+    is-prop→pathp
+      (λ i → Π-is-hlevel 1
+        (λ _ → Equiv→is-hlevel 1 (identity-system-gives-path (sa .idsᵉ)) (D .Hom-set _ _ _ _)))
+      _ _
 ```
 -->
