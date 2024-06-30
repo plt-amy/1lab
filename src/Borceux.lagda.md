@@ -44,7 +44,6 @@ open import Cat.Diagram.Limit.Pullback
 open import Cat.Functor.Hom.Properties
 open import Cat.Instances.Localisation
 open import Cat.Morphism.Factorisation
-open import Cat.Diagram.Monad.Kleisli
 open import Cat.Functor.Adjoint.Monad
 open import Cat.Functor.Kan.Pointwise
 open import Cat.Diagram.Colimit.Base
