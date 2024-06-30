@@ -10,23 +10,13 @@ open import Algebra.Group.Cat.Base
 open import Algebra.Group.Free hiding (_◆_)
 open import Algebra.Group.Ab
 
-open import Cat.Bi.Base
-open import Cat.Bi.Diagram.Adjunction renaming (_⊣_ to _⊣ᵇ_)
-open import Cat.Bi.Instances.Spans
-
-open import Cat.Internal.Base
-open import Cat.Internal.Instances.Discrete
-open import Cat.Internal.Opposite
-open import Cat.Internal.Functor.Outer
-
-open import Cat.CartesianClosed.Locally
-open import Cat.Instances.OuterFunctor
 open import Cat.Diagram.Coequaliser.RegularEpi
 open import Cat.Functor.Adjoint.Representable
 open import Cat.Instances.Elements.Covariant renaming (∫ to ∫cov)
 open import Cat.Instances.StrictCat.Cohesive hiding (Disc)
 open import Cat.Monoidal.Instances.Cartesian
 open import Cat.Diagram.Pullback.Properties
+open import Cat.Internal.Instances.Discrete
 open import Cat.Functor.Adjoint.Continuous
 open import Cat.Functor.Adjoint.Reflective
 open import Cat.Diagram.Colimit.Universal
@@ -34,6 +24,7 @@ open import Cat.Diagram.Coproduct.Indexed
 open import Cat.Functor.Hom.Representable
 open import Cat.Instances.Sets.Cocomplete
 open import Cat.Instances.Functor.Limits
+open import Cat.CartesianClosed.Locally
 open import Cat.Diagram.Limit.Equaliser
 open import Cat.Diagram.Product.Indexed
 open import Cat.Functor.Adjoint.Compose
@@ -43,7 +34,10 @@ open import Cat.Diagram.Colimit.Cocone
 open import Cat.Diagram.Limit.Pullback
 open import Cat.Functor.Hom.Properties
 open import Cat.Instances.Localisation
+open import Cat.Instances.OuterFunctor
+open import Cat.Internal.Functor.Outer
 open import Cat.Morphism.Factorisation
+open import Cat.Bi.Diagram.Adjunction renaming (_⊣_ to _⊣ᵇ_)
 open import Cat.Functor.Adjoint.Monad
 open import Cat.Functor.Kan.Pointwise
 open import Cat.Diagram.Colimit.Base
@@ -59,6 +53,8 @@ open import Cat.Functor.Subcategory
 open import Cat.Instances.Delooping
 open import Cat.Instances.StrictCat
 open import Cat.Morphism.Orthogonal
+open import Cat.Bi.Instances.Spans
+open import Cat.Diagram.Idempotent
 open import Cat.Diagram.Limit.Base
 open import Cat.Diagram.Limit.Cone
 open import Cat.Functor.Hom.Yoneda
@@ -69,6 +65,7 @@ open import Cat.Diagram.Equaliser
 open import Cat.Instances.Functor
 open import Cat.Instances.Karoubi
 open import Cat.Instances.Product
+open import Cat.Internal.Opposite
 open import Cat.Diagram.Pullback
 open import Cat.Diagram.Terminal
 open import Cat.Functor.Kan.Base
@@ -85,12 +82,13 @@ open import Cat.Instances.Free
 open import Cat.Instances.Sets
 open import Cat.Diagram.Monad
 open import Cat.Functor.Final
+open import Cat.Internal.Base
 open import Cat.Functor.Base
 open import Cat.Functor.Hom
 open import Cat.Morphism
+open import Cat.Bi.Base
 open import Cat.Prelude
 open import Cat.Strict
-open import Cat.Diagram.Idempotent
 
 open import Data.Set.Surjection
 
