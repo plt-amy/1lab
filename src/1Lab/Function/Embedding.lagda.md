@@ -121,6 +121,12 @@ Subset-proj-embedding {B = B} Bprop x = Equiv→is-hlevel 1 (Fibre-equiv B x) (B
 
 <!--
 ```agda
+∙-is-injective
+  : ∀ {ℓ ℓ' ℓ''} {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''}
+  → {f : A → B} {g : B → C}
+  → injective f → injective g → injective (g ∘ f)
+∙-is-injective f-inj g-inj p = f-inj (g-inj p)
+
 ∙-is-embedding
   : ∀ {ℓ ℓ' ℓ''} {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''}
   → {f : A → B} {g : B → C}
@@ -220,5 +226,53 @@ module _ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} {f : A → B} where
       → is-hlevel A (suc n)
     embedding→is-hlevel n emb a-hl = Equiv→is-hlevel (suc n) (Total-equiv f) $
       Σ-is-hlevel (suc n) a-hl λ x → is-prop→is-hlevel-suc (emb x)
+
+    injective→is-set
+      : injective f
+      → is-set B
+      → is-set A
+    injective→is-set inj b-set =
+      embedding→is-hlevel 1
+        (injective→is-embedding b-set f inj) b-set
 ```
 -->
+
+## Fibrewise embeddings
+
+Like [[fibrewise equivalences]], fibrewise embeddings are equivalent
+to embeddings between total spaces.
+
+```agda
+module _
+  {ℓ ℓ' ℓ''} {A : Type ℓ} {P : A → Type ℓ'} {Q : A → Type ℓ''}
+  {f : ∀ (x : A) → P x → Q x}
+  where
+
+  injective→injectivep
+    : ∀ {x y} {px} {py}
+    → (∀ {x} → injective (f x))
+    → (p : x ≡ y)
+    → PathP (λ i → Q (p i)) (f x px) (f y py)
+    → PathP (λ i → P (p i)) px py
+  injective→injectivep {x = x} {y = y} {px = px} {py = py} inj p =
+    J (λ y p → ∀ {py} → PathP (λ i → Q (p i)) (f x px) (f y py) → PathP (λ i → P (p i)) px py)
+      inj p
+
+  embedding→total
+    : (∀ {x} → is-embedding (f x))
+    → is-embedding (total f)
+  embedding→total always-emb y =
+    iso→is-hlevel 1
+      (total-fibres .fst)
+      (total-fibres .snd)
+      (always-emb (y .snd))
+
+  total→embedding
+    : is-embedding (total f)
+    → ∀ {x} → is-embedding (f x)
+  total→embedding emb {x} y =
+    iso→is-hlevel 1
+      (total-fibres .snd .is-iso.inv)
+      (is-iso.inverse (total-fibres .snd))
+      (emb (x , y))
+```

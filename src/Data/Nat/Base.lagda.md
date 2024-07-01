@@ -229,6 +229,13 @@ m < n = suc m ≤ n
 infix 3 _<_ _≤_
 ```
 
+<!--
+```agda
+0<s : ∀ {x} → 0 < suc x
+0<s = s≤s 0≤x
+```
+-->
+
 As an "ordering combinator", we can define the _maximum_ of two natural
 numbers by recursion: The maximum of zero and a successor (on either
 side) is the successor, and the maximum of successors is the successor of

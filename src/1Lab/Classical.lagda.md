@@ -120,7 +120,7 @@ Surjections-split =
   ∀ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} → is-set A → is-set B
   → (f : A → B)
   → is-surjective f
-  → ∥ (∀ b → fibre f b) ∥
+  → ∥ split-surjective f ∥
 ```
 
 We show that these two statements are logically equivalent^[they are also

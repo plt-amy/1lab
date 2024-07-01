@@ -89,12 +89,10 @@ if, and only if, we have $f \ortho g$ for every $f \in E$.
 <!--
 ```agda
 module
-  _ {o ℓ} (C : Precategory o ℓ) (E M : ∀ {a b} → ℙ (C .Precategory.Hom a b))
-    (fs : is-factorisation-system C E M)
+  _ {o ℓ} {C : Precategory o ℓ} {E M : ∀ {a b} → ℙ (C .Precategory.Hom a b)}
     where
 
   private module C = Cat.Reasoning C
-  open is-factorisation-system fs
   open Factorisation
 ```
 -->
@@ -107,11 +105,33 @@ with both the `mediate`{.Agda} morphism and the `forget`{.Agda}
 morphism. We reproduce the proof from [@Borceux:vol1, §5.5].
 
 ```agda
+  is-essentially-unique-factorisation
+    : ∀ {a b} (f : C.Hom a b) (fa : Factorisation C E M f)
+    → Type _
+  is-essentially-unique-factorisation f fa =
+    ∀ (fa' : Factorisation C E M f)
+    → Σ[ f ∈ fa .mediating C.≅ fa' .mediating ]
+        ( (f .C.to C.∘ fa .mediate ≡ fa' .mediate)
+        × (fa .forget C.∘ f .C.from ≡ fa' .forget))
+```
+
+<!--
+```agda
+module
+  _ {o ℓ} (C : Precategory o ℓ) (E M : ∀ {a b} → ℙ (C .Precategory.Hom a b))
+    (fs : is-factorisation-system C E M)
+    where
+
+  private module C = Cat.Reasoning C
+  open is-factorisation-system fs
+  open Factorisation
+```
+-->
+
+```agda
   factorisation-essentially-unique
-    : ∀ {a b} (f : C.Hom a b) (fa1 fa2 : Factorisation C E M f)
-    → Σ[ f ∈ fa1 .mediating C.≅ fa2 .mediating ]
-        ( (f .C.to C.∘ fa1 .mediate ≡ fa2 .mediate)
-        × (fa1 .forget C.∘ f .C.from ≡ fa2 .forget))
+    : ∀ {a b} (f : C.Hom a b) (fa : Factorisation C E M f)
+    → is-essentially-unique-factorisation f fa
   factorisation-essentially-unique f fa1 fa2 =
     C.make-iso (upq .fst) (vp'q' .fst) vu=id uv=id , upq .snd .fst , vp'q' .snd .snd
     where

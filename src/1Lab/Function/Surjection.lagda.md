@@ -4,6 +4,7 @@ open import 1Lab.Function.Embedding
 open import 1Lab.Reflection.HLevel
 open import 1Lab.HIT.Truncation
 open import 1Lab.HLevel.Closure
+open import 1Lab.Type.Sigma
 open import 1Lab.Inductive
 open import 1Lab.HLevel
 open import 1Lab.Equiv
@@ -144,3 +145,17 @@ injective-surjective→is-equiv! =
   injective-surjective→is-equiv (hlevel 2)
 ```
 -->
+
+## Split surjective functions {defines="split-surjective"}
+
+A function is **split surjective** if for each $b : B$ we have a designated
+element of the fibre $f^*b$. Note that this is actually a *structure*
+on $f$ instead of a property: in fact, the statement that every
+surjection between sets is a split surjection is [[equivalent to the
+axiom of choice|axiom-of-choice]].
+
+
+```agda
+split-surjective : (A → B) → Type _
+split-surjective f = ∀ b → fibre f b
+```

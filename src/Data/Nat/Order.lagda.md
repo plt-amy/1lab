@@ -94,11 +94,14 @@ instance
 -->
 
 We also have that a successor is never smaller than the number it
-succeeds:
+succeeds, and that a successor is always larger than zero.
 
 ```agda
 ¬sucx≤x : (x : Nat) → ¬ (suc x ≤ x)
 ¬sucx≤x (suc x) (s≤s ord) = ¬sucx≤x x ord
+
+¬sucx≤0 : (x : Nat) → ¬ (suc x ≤ 0)
+¬sucx≤0 x ()
 ```
 
 We can do proofs on pairs of natural numbers by splitting into cases of
@@ -141,6 +144,15 @@ their strict ordering:
 weaken-< : ∀ {x y} → x < y → x ≤ y
 weaken-< {x} {suc y} p = ≤-sucr (≤-peel p)
 ```
+
+<!--
+```agda
+not-<-≤ : ∀ {x y} → ¬ (y < x) → x ≤ y
+not-<-≤ {zero} {y} ¬y<x = 0≤x
+not-<-≤ {suc x} {zero} ¬y<x = absurd (¬y<x 0<s)
+not-<-≤ {suc x} {suc y} ¬y<x = s≤s (not-<-≤ (¬y<x ∘ s≤s))
+```
+-->
 
 ## Nat is a lattice
 
@@ -227,3 +239,18 @@ an inhabited subset.
   ℕ-well-ordered P-dec wit = ∥-∥-rec minimal-solution-unique
     (λ { (n , p) → ℕ-minimal-solution _ P-dec n p }) wit
 ```
+
+<!--
+```agda
+-- Avoids transports in indices.
+cast-≤ : ∀ {m m' n n'} → m ≡ m' → n ≡ n' → m ≤ n → m' ≤ n'
+cast-≤ {zero} {zero} {zero} {zero} p q 0≤x = 0≤x
+cast-≤ {zero} {zero} {zero} {suc n'} p q m≤n = absurd (zero≠suc q)
+cast-≤ {zero} {zero} {suc n} {zero} p q m≤n = absurd (suc≠zero q)
+cast-≤ {zero} {zero} {suc n} {suc n'} p q 0≤x = 0≤x
+cast-≤ {zero} {suc m'} {n} {n'} p q m≤n = absurd (zero≠suc p)
+cast-≤ {suc m} {zero} {n} {n'} p q m≤n = absurd (suc≠zero p)
+cast-≤ {suc m} {suc m'} {suc n} {zero} p q m≤n = absurd (suc≠zero q)
+cast-≤ {suc m} {suc m'} {suc n} {suc n'} p q (s≤s m≤n) = s≤s (cast-≤ (suc-inj p) (suc-inj q) m≤n)
+```
+-->

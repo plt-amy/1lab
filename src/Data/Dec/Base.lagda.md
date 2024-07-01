@@ -164,6 +164,10 @@ is-yes : ∀ {ℓ} {A : Type ℓ} → Dec A → Type
 is-yes (yes x) = ⊤
 is-yes (no _)  = ⊥
 
+not? : ∀ {ℓ} {A : Type ℓ} → Dec A → Dec (¬ A)
+not? (yes p) = no (_$ p)
+not? (no ¬p) = yes ¬p
+
 decide! : ∀ {ℓ} {A : Type ℓ} ⦃ d : Dec A ⦄ {_ : is-yes d} → A
 decide! ⦃ yes x ⦄ = x
 ```

@@ -341,3 +341,20 @@ opaque
       ... | yes p = p
       ... | no ¬p = absurd (¬¬p ¬p)
 ```
+
+<!--
+```agda
+-- Variant of set-identity-system that only requires that loops are
+-- propositions.
+set-identity-system-K
+  : ∀ {ℓ ℓ'} {A : Type ℓ} {R : A → A → Type ℓ'} {r : ∀ a → R a a}
+  → (∀ a → (s : R a a) → s ≡ r a)
+  → (∀ {a b} → R a b → a ≡ b)
+  → is-identity-system R r
+set-identity-system-K {R = R} {r = r} rprop rpath .to-path = rpath
+set-identity-system-K {R = R} {r = r} rprop rpath .to-path-over {a} rab =
+  J (λ b p → ∀ (rab : R a b) → PathP (λ i → R a (p i)) (r a) rab)
+    (λ s → sym (rprop a s)) (rpath rab)
+    rab
+```
+-->

@@ -124,6 +124,13 @@ fzero≠fsuc {n = n} path = subst distinguish path tt where
   distinguish (fsuc _) = ⊥
 ```
 
+<!--
+```agda
+fsuc≠fzero : ∀ {n} {i : Fin n} → ¬ fsuc i ≡ fzero
+fsuc≠fzero = fzero≠fsuc ∘ sym
+```
+-->
+
 Next, we show that `fsuc` is injective. This again follows
 the proof in [`Data.Nat.Base`], but some extra care must be
 taken to ensure that `pred`{.Agda} is well typed!
@@ -304,3 +311,18 @@ delete
   → Fin n → A
 delete ρ i j = ρ (skip i j)
 ```
+
+<!--
+```agda
+fabsurd : ∀ {ℓ} {A : Type ℓ} → Fin 0 → A
+fabsurd ()
+
+fpred : ∀ {n} → Fin (2 + n) → Fin (1 + n)
+fpred fzero = fzero
+fpred (fsuc i) = i
+
+fkeep : ∀ {m n} → (Fin m → Fin n) → Fin (suc m) → Fin (suc n)
+fkeep f fzero = fzero
+fkeep f (fsuc i) = fsuc (f i)
+```
+-->
