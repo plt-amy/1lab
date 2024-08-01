@@ -57,6 +57,9 @@ module _ (a≡id : a ≡ 𝒞.id) where
   elimr : f 𝒟.∘ F₁ a ≡ f
   elimr = 𝒟.elimr elim
 
+  intro : 𝒟.id ≡ F₁ a
+  intro = sym F-id ∙ ap F₁ (sym a≡id)
+
   introl : f ≡ F₁ a 𝒟.∘ f
   introl = 𝒟.introl elim
 
