@@ -315,11 +315,11 @@ $\cC$. We can extend $f$ to a function $fold(f)$ from paths in $G$ to morphisms
 in $\cC$ via induction.
 
 ```agda
-module _ (C : Precategory o ℓ) (C-strict : is-strict C) where
-  private module C = Cat.Reasoning C
+module _ (C : Σ (Precategory o ℓ) is-strict) where
+  private module C = Cat.Reasoning (C .fst)
 
   path-fold
-    : (f : Graph-hom G (Strict-cats↪Graphs .F₀ (C , C-strict)))
+    : (f : Graph-hom G (Strict-cats↪Graphs .F₀ C))
     → ∀ {x y} → Path-in G x y → C.Hom (f .vertex x) (f .vertex y)
   path-fold f nil = C.id
   path-fold f (cons e p) = path-fold f p C.∘ f .edge e
@@ -331,20 +331,31 @@ some easy induction.
 
 ```agda
   path-fold-++
-    : {f : Graph-hom G (Strict-cats↪Graphs .F₀ (C , C-strict))}
+    : {f : Graph-hom G (Strict-cats↪Graphs .F₀ C)}
     → ∀ {x y z} (p : Path-in G x y) (q : Path-in G y z)
     → path-fold f (p ++ q) ≡ path-fold f q C.∘ path-fold f p
   path-fold-++ nil q = sym (C.idr _)
   path-fold-++ (cons e p) q = C.pushl (path-fold-++ p q)
 
   PathF
-    : Graph-hom G (Strict-cats↪Graphs .F₀ (C , C-strict))
-    → Functor (Path-category G) C
+    : Graph-hom G (Strict-cats↪Graphs .F₀ C)
+    → Functor (Path-category G) (C .fst)
   PathF f .F₀ = f .vertex
   PathF f .F₁ = path-fold f
   PathF f .F-id = refl
   PathF f .F-∘ p q = path-fold-++ q p
 ```
+
+<!--
+```agda
+  path-reduce
+    : ∀ {x y}
+    → Path-in (Strict-cats↪Graphs .F₀ C) x y
+    → C.Hom x y
+  path-reduce = path-fold Graphs.id
+
+```
+-->
 
 <!--
 ```agda
@@ -404,13 +415,67 @@ Free-category : ∀ (G : Graph ℓ ℓ) → Free-object Strict-cats↪Graphs G
 Free-category G .Free-object.free = Path-category G , hlevel 2
 Free-category G .Free-object.unit .vertex v = v
 Free-category G .Free-object.unit .edge e = cons e nil
-Free-category G .Free-object.fold {C , C-strict} = PathF C C-strict
-Free-category G .Free-object.commute {Y = C , C-strict} {f = f} =
+Free-category G .Free-object.fold {C} = PathF C
+Free-category G .Free-object.commute {Y = C} {f = f} =
   Graph-hom-path (λ _ → refl) (λ _ → idl _)
-  where open Precategory C
-Free-category G .Free-object.unique {Y = C , C-strict} {f} F p =
+  where open Precategory (C .fst)
+Free-category G .Free-object.unique {Y = C} {f} F p =
   Path-category-functor-path
     (λ x i → p i .vertex x)
     (λ e → to-pathp (from-pathp (λ i → p i .edge e) ∙ sym (idl _)))
-  where open Precategory C
+  where open Precategory (C .fst)
 ```
+
+<!--
+```agda
+Free-categories : Functor (Graphs ℓ ℓ) (Strict-cats ℓ ℓ)
+Free-categories = free-objects→functor Free-category
+
+Free-categories⊣Underlying-graph : Free-categories {ℓ} ⊣ Strict-cats↪Graphs
+Free-categories⊣Underlying-graph = free-objects→left-adjoint Free-category
+```
+-->
+
+
+<!--
+```agda
+path-map
+  : ∀ {x y}
+  → (f : Graph-hom G H)
+  → Path-in G x y
+  → Path-in H (f # x) (f # y)
+path-map f nil = nil
+path-map f (cons e p) = cons (f .edge e) (path-map f p)
+
+path-map-id
+  : ∀ {x y}
+  → (p : Path-in G x y)
+  → path-map Graphs.id p ≡ p
+path-map-id nil = refl
+path-map-id (cons e p) = ap (cons e) (path-map-id p)
+
+path-map-∘
+  : ∀ {x y}
+  → {f : Graph-hom H K} {g : Graph-hom G H}
+  → (p : Path-in G x y)
+  → path-map (f Graphs.∘ g) p ≡ path-map f (path-map g p)
+path-map-∘ nil = refl
+path-map-∘ (cons e p) = ap₂ cons refl (path-map-∘ p)
+
+module _
+  {C D : Σ (Precategory o ℓ) is-strict}
+  (F : Functor (C .fst) (D .fst))
+  where
+  private
+    module C = Cat.Reasoning (C .fst)
+    module D = Cat.Reasoning (D .fst)
+    module F = Functor F
+
+  path-reduce-map
+    : ∀ {x y}
+    → (p : Path-in (Strict-cats↪Graphs .F₀ C) x y)
+    → path-reduce D (path-map (Strict-cats↪Graphs .F₁ F) p) ≡ F.₁ (path-reduce C p)
+  path-reduce-map nil = sym F.F-id
+  path-reduce-map (cons e p) = ap₂ D._∘_ (path-reduce-map p) refl ∙ sym (F.F-∘ _ _)
+```
+-->

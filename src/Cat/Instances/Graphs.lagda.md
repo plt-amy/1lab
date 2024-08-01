@@ -27,6 +27,8 @@ private variable
 ```
 -->
 
+# The category of graphs
+
 :::{.definition #graph}
 A **graph** (really, an $(o, \ell)$-graph^[and, even more pedantically,
 a directed multi-$(o, ℓ)$-graph]) is given by a set $V : \Sets_o$ of
@@ -37,7 +39,7 @@ and a family of sets over $V \times V$.
 
 
 ```agda
-record Graph o ℓ : Type (lsuc o ⊔ lsuc ℓ) where
+record Graph (o ℓ : Level) : Type (lsuc o ⊔ lsuc ℓ) where
   no-eta-equality
   field
     Vertex : Type o
