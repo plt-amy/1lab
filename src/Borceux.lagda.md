@@ -47,6 +47,7 @@ open import Cat.Diagram.Colimit.Base
 open import Cat.Diagram.Limit.Finite
 open import Cat.Functor.Conservative
 open import Cat.Functor.Hom.Coyoneda
+open import Cat.Instances.CommGraphs
 open import Cat.Diagram.Coequaliser
 open import Cat.Functor.Adjoint.Hom
 open import Cat.Functor.Adjoint.Kan
@@ -75,6 +76,7 @@ open import Cat.Diagram.Terminal
 open import Cat.Functor.Constant
 open import Cat.Functor.Kan.Base
 open import Cat.Functor.Morphism
+open import Cat.Instances.Graphs
 open import Cat.Diagram.Initial
 open import Cat.Diagram.Product
 open import Cat.Diagram.Pushout
@@ -887,14 +889,21 @@ _ = zero+indexed-coproduct-strong-projective→strong-projective
 <!--
 ```agda
 _ = Graph
+_ = Graph-hom
 _ = Path-in
 _ = Path-category
+_ = Free-category
+_ = Comm-graph
+_ = Comm-graphs
 ```
 -->
 
 * Definition 5.1.1: `Graph`{.Agda}
+* Definition 5.1.2: `Graph-hom`{.Agda}
 * Definition 5.1.3: `Path-in`{.Agda}
-* Proposition 5.1.4: `Path-category`{.Agda}
+* Proposition 5.1.4: `Path-category`{.Agda}, `Free-category`{.Agda}
+* Definition 5.1.5: `Comm-graph`{.Agda}, `Comm-graphs`{.Agda}
+* Proposition 5.1.6: `Comm-free-category`{.Agda}
 
 ### 5.2 Calculus of fractions
 

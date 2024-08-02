@@ -316,10 +316,13 @@ in $\cC$ via induction.
 
 ```agda
 module _ (C : Σ (Precategory o ℓ) is-strict) where
-  private module C = Cat.Reasoning (C .fst)
+  private
+    module C = Cat.Reasoning (C .fst)
+    ∣C∣ : Graph o ℓ
+    ∣C∣ = Strict-cats↪Graphs .F₀ C
 
   path-fold
-    : (f : Graph-hom G (Strict-cats↪Graphs .F₀ C))
+    : (f : Graph-hom G ∣C∣)
     → ∀ {x y} → Path-in G x y → C.Hom (f .vertex x) (f .vertex y)
   path-fold f nil = C.id
   path-fold f (cons e p) = path-fold f p C.∘ f .edge e
@@ -331,14 +334,14 @@ some easy induction.
 
 ```agda
   path-fold-++
-    : {f : Graph-hom G (Strict-cats↪Graphs .F₀ C)}
+    : {f : Graph-hom G ∣C∣}
     → ∀ {x y z} (p : Path-in G x y) (q : Path-in G y z)
     → path-fold f (p ++ q) ≡ path-fold f q C.∘ path-fold f p
   path-fold-++ nil q = sym (C.idr _)
   path-fold-++ (cons e p) q = C.pushl (path-fold-++ p q)
 
   PathF
-    : Graph-hom G (Strict-cats↪Graphs .F₀ C)
+    : Graph-hom G ∣C∣
     → Functor (Path-category G) (C .fst)
   PathF f .F₀ = f .vertex
   PathF f .F₁ = path-fold f
@@ -348,6 +351,17 @@ some easy induction.
 
 <!--
 ```agda
+  path-fold-unique
+    : ∀ {f : Graph-hom G ∣C∣}
+    → (h : ∀ {x y} → Path-in G x y → C.Hom (f .vertex x) (f .vertex y))
+    → (∀ {x} → h (nil {a = x}) ≡ C.id)
+    → (∀ {x y z} (e : G .Edge x y) (p : Path-in G y z) → h (cons e p) ≡ (h p C.∘ f .edge e))
+    → ∀ {x y} (p : Path-in G x y) → h p ≡ path-fold f p
+  path-fold-unique h n c nil = n
+  path-fold-unique h n c (cons e p) =
+    c e p
+    ∙ ap₂ C._∘_ (path-fold-unique h n c p) refl
+
   path-reduce
     : ∀ {x y}
     → Path-in (Strict-cats↪Graphs .F₀ C) x y
@@ -439,6 +453,7 @@ Free-categories⊣Underlying-graph = free-objects→left-adjoint Free-category
 
 <!--
 ```agda
+-- Defined by hand to be more universe polymorphic.
 path-map
   : ∀ {x y}
   → (f : Graph-hom G H)
@@ -471,11 +486,25 @@ module _
     module D = Cat.Reasoning (D .fst)
     module F = Functor F
 
-  path-reduce-map
+  path-reduce-natural
     : ∀ {x y}
     → (p : Path-in (Strict-cats↪Graphs .F₀ C) x y)
     → path-reduce D (path-map (Strict-cats↪Graphs .F₁ F) p) ≡ F.₁ (path-reduce C p)
-  path-reduce-map nil = sym F.F-id
-  path-reduce-map (cons e p) = ap₂ D._∘_ (path-reduce-map p) refl ∙ sym (F.F-∘ _ _)
+  path-reduce-natural nil = sym F.F-id
+  path-reduce-natural (cons e p) = ap₂ D._∘_ (path-reduce-natural p) refl ∙ sym (F.F-∘ _ _)
+
+module _
+  {C : Σ (Precategory o ℓ) is-strict}
+  where
+  private
+    module C = Cat.Reasoning (C .fst)
+
+  path-reduce-map
+    : ∀ {x y}
+    → {f : Graph-hom G (Strict-cats↪Graphs .F₀ C)}
+    → (p : Path-in G x y)
+    → path-reduce C (path-map f p) ≡ path-fold C f p
+  path-reduce-map nil = refl
+  path-reduce-map (cons e p) = ap₂ C._∘_ (path-reduce-map p) refl
 ```
 -->
