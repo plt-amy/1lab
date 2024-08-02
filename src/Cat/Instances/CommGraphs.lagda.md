@@ -33,7 +33,7 @@ then we really do need a way to add non-trivial equalities. In other words,
 we need to be able to construct categories freely from a set of generators
 *and* relations! This leads us to the following notion:
 
-:::{.definition #graph-with-commutativity-conditions alias="commutative graph"}
+:::{.definition #graph-with-commutativity-conditions alias="commutative-graph"}
 A **graph with commutativity conditions** or **commutative graph**
 consists of a [[graph]] $G$ along with a set of distinguished paths in $G$,
 referred to as **commutativities**.
