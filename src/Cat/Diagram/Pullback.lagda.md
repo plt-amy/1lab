@@ -354,22 +354,80 @@ We also provide a helper module for working with categories that have all
 pullbacks.
 
 ```agda
-has-pullbacks : ∀ {o ℓ} → Precategory o ℓ → Type _
-has-pullbacks C = ∀ {A B X} (f : Hom A X) (g : Hom B X) → Pullback C f g
-  where open Precategory C
-
-module Pullbacks
-  {o ℓ}
-  (C : Precategory o ℓ)
-  (all-pullbacks : has-pullbacks  C)
-  where
-  open Precategory C
-  module pullback {x y z} (f : Hom x z) (g : Hom y z) =
-    Pullback (all-pullbacks f g)
-
-  Pb : ∀ {x y z} → Hom x z → Hom y z → Ob
-  Pb = pullback.apex
+record Pullbacks {o ℓ} (C : Precategory o ℓ) : Type (o ⊔ ℓ) where
+  no-eta-equality
+  open Cat.Reasoning C
+  field
+    Pb : ∀ {X Y Z} → Hom X Z → Hom Y Z → Ob
+    p₁ : ∀ {X Y Z} (f : Hom X Z) (g : Hom Y Z) → Hom (Pb f g) X
+    p₂ : ∀ {X Y Z} (f : Hom X Z) (g : Hom Y Z) → Hom (Pb f g) Y
+    square
+      : ∀ {X Y Z} {f : Hom X Z} {g : Hom Y Z}
+      → f ∘ p₁ f g ≡ g ∘ p₂ f g
+    pb
+      : ∀ {P X Y Z} {f : Hom X Z} {g : Hom Y Z}
+      → (p1 : Hom P X) (p2 : Hom P Y)
+      → f ∘ p1 ≡ g ∘ p2
+      → Hom P (Pb f g)
+    p₁∘pb
+      : ∀ {P X Y Z} {f : Hom X Z} {g : Hom Y Z}
+      → {p1 : Hom P X} {p2 : Hom P Y}
+      → {sq : f ∘ p1 ≡ g ∘ p2}
+      → p₁ f g ∘ pb p1 p2 sq ≡ p1
+    p₂∘pb
+      : ∀ {P X Y Z} {f : Hom X Z} {g : Hom Y Z}
+      → {p1 : Hom P X} {p2 : Hom P Y}
+      → {sq : f ∘ p1 ≡ g ∘ p2}
+      → p₂ f g ∘ pb p1 p2 sq ≡ p2
+    pb-unique
+      : ∀ {P X Y Z} {f : Hom X Z} {g : Hom Y Z}
+      → {p1 : Hom P X} {p2 : Hom P Y}
+      → {sq : f ∘ p1 ≡ g ∘ p2}
+      → {other : Hom P (Pb f g)}
+      → p₁ f g ∘ other ≡ p1
+      → p₂ f g ∘ other ≡ p2
+      → other ≡ pb p1 p2 sq
 ```
+
+<!--
+```agda
+  pullback : ∀ {X Y Z} → (f : Hom X Z) → (g : Hom Y Z) → Pullback C f g
+  pullback f g .Pullback.apex = Pb f g
+  pullback f g .Pullback.p₁ = p₁ f g
+  pullback f g .Pullback.p₂ = p₂ f g
+  pullback f g .Pullback.has-is-pb .is-pullback.square = square
+  pullback f g .Pullback.has-is-pb .is-pullback.universal sq = pb _ _ sq
+  pullback f g .Pullback.has-is-pb .is-pullback.p₁∘universal = p₁∘pb
+  pullback f g .Pullback.has-is-pb .is-pullback.p₂∘universal = p₂∘pb
+  pullback f g .Pullback.has-is-pb .is-pullback.unique = pb-unique
+
+  private module pullback {X Y Z} {f : Hom X Z} {g : Hom Y Z} = Pullback (pullback f g)
+  open pullback
+    using (has-is-pb)
+    renaming (unique₂ to pb-unique₂)
+    public
+
+to-pullbacks
+  : ∀ {o ℓ} {C : Precategory o ℓ}
+  → (let open Precategory C)
+  → (∀ {A B X} (f : Hom A X) (g : Hom B X) → Pullback C f g)
+  → Pullbacks C
+to-pullbacks {C = C} has-pullbacks = pullbacks where
+  open Precategory C
+  module pb {X Y Z} {f : Hom X Z} {g : Hom Y Z} = Pullback (has-pullbacks f g)
+  open Pullbacks
+
+  pullbacks : Pullbacks C
+  pullbacks .Pb f g = pb.apex {f = f} {g = g}
+  pullbacks .p₁ _ _ = pb.p₁
+  pullbacks .p₂ _ _ = pb.p₂
+  pullbacks .square = pb.square
+  pullbacks .pb p1 p2 sq = pb.universal sq
+  pullbacks .p₁∘pb = pb.p₁∘universal
+  pullbacks .p₂∘pb = pb.p₂∘universal
+  pullbacks .pb-unique = pb.unique
+```
+-->
 
 ## Stability {defines="pullback-stability pullback-stable"}
 

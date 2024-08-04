@@ -227,40 +227,58 @@ the projections.
 
 # Categories with all binary products
 
-Categories with all binary products are quite common, so we define
-a module for working with them.
+Categories with all binary products are quite common, so we provide
+an API for working with them. In order to get better printing in goals,
+we define an unnested record where all operations are top-level fields;
+this means that goals willl print as `⟨ f , g ⟩` instead of
+`is-product.⟨_,_⟩ (product A B) f g`.
 
 ```agda
-has-products : ∀ {o ℓ} → Precategory o ℓ → Type _
-has-products C = ∀ a b → Product C a b
-
-module Binary-products
-  {o ℓ}
-  (C : Precategory o ℓ)
-  (all-products : has-products C)
-  where
+record Binary-products {o ℓ} (C : Precategory o ℓ) : Type (o ⊔ ℓ) where
+  no-eta-equality
   open Cat.Reasoning C
-  private variable
-    A B a b c d : Ob
-
-  module product {a} {b} = Product (all-products a b)
-
-  open product renaming
-    (unique to ⟨⟩-unique) public
-  open Functor
+  field
+    _⊗₀_ : Ob → Ob → Ob
+    π₁ : ∀ {A B} → Hom (A ⊗₀ B) A
+    π₂ : ∀ {A B} → Hom (A ⊗₀ B) B
+    ⟨_,_⟩ : ∀ {A B X} → Hom X A → Hom X B → Hom X (A ⊗₀ B)
+    π₁∘⟨⟩ : ∀ {A B X} {p1 : Hom X A} {p2 : Hom X B} → π₁ ∘ ⟨ p1 , p2 ⟩ ≡ p1
+    π₂∘⟨⟩ : ∀ {A B X} {p1 : Hom X A} {p2 : Hom X B} → π₂ ∘ ⟨ p1 , p2 ⟩ ≡ p2
+    ⟨⟩-unique
+      : ∀ {A B X}
+      → {p1 : Hom X A} {p2 : Hom X B}
+      → {other : Hom X (A ⊗₀ B)}
+      → π₁ ∘ other ≡ p1
+      → π₂ ∘ other ≡ p2
+      → other ≡ ⟨ p1 , p2 ⟩
 
   infixr 7 _⊗₀_
   infix 50 _⊗₁_
 ```
 
-We start by defining a "global" product-assigning operation.
-
+<!--
 ```agda
-  _⊗₀_ : Ob → Ob → Ob
-  a ⊗₀ b = product.apex {a} {b}
-```
+  open Functor
 
-This operation extends to a bifunctor $\cC \times \cC \to \cC$.
+  product : ∀ A B → Product C A B
+  product A B .Product.apex = A ⊗₀ B
+  product A B .Product.π₁ = π₁
+  product A B .Product.π₂ = π₂
+  product A B .Product.has-is-product .is-product.⟨_,_⟩ = ⟨_,_⟩
+  product A B .Product.has-is-product .is-product.π₁∘⟨⟩ = π₁∘⟨⟩
+  product A B .Product.has-is-product .is-product.π₂∘⟨⟩ = π₂∘⟨⟩
+  product A B .Product.has-is-product .is-product.unique = ⟨⟩-unique
+
+  private module product {A} {B} = Product (product A B)
+  open product
+    using (⟨⟩∘; ⟨⟩-η; has-is-product)
+    renaming (unique₂ to ⟨⟩-unique₂)
+    public
+```
+-->
+
+If a category has all binary products, we can define a bifunctor
+$\cC \times \cC \to \cC$ that sets $A, B$ to their product.
 
 ```agda
   _⊗₁_ : ∀ {a b x y} → Hom a x → Hom b y → Hom (a ⊗₀ b) (x ⊗₀ y)
@@ -279,27 +297,27 @@ This operation extends to a bifunctor $\cC \times \cC \to \cC$.
 We also define a handful of common morphisms.
 
 ```agda
-  δ : Hom a (a ⊗₀ a)
+  δ : ∀ {A} → Hom A (A ⊗₀ A)
   δ = ⟨ id , id ⟩
 
-  swap : Hom (a ⊗₀ b) (b ⊗₀ a)
+  swap : ∀ {A B} → Hom (A ⊗₀ B) (B ⊗₀ A)
   swap = ⟨ π₂ , π₁ ⟩
 
-  ×-assoc : Hom (a ⊗₀ (b ⊗₀ c)) ((a ⊗₀ b) ⊗₀ c)
+  ×-assoc : ∀ {A B C} → Hom (A ⊗₀ (B ⊗₀ C)) ((A ⊗₀ B) ⊗₀ C)
   ×-assoc = ⟨ ⟨ π₁ , π₁ ∘ π₂ ⟩ , π₂ ∘ π₂ ⟩
 ```
 
 <!--
 ```agda
   δ-natural : is-natural-transformation Id (×-functor F∘ Cat⟨ Id , Id ⟩) λ _ → δ
-  δ-natural x y f = unique₂
+  δ-natural x y f = ⟨⟩-unique₂
     (cancell π₁∘⟨⟩) (cancell π₂∘⟨⟩)
     (pulll π₁∘⟨⟩ ∙ cancelr π₁∘⟨⟩) (pulll π₂∘⟨⟩ ∙ cancelr π₂∘⟨⟩)
 
-  swap-is-iso : ∀ {a b} → is-invertible (swap {a} {b})
+  swap-is-iso : ∀ {A B} → is-invertible (swap {A} {B})
   swap-is-iso = make-invertible swap
-    (unique₂ (pulll π₁∘⟨⟩ ∙ π₂∘⟨⟩) ((pulll π₂∘⟨⟩ ∙ π₁∘⟨⟩)) (idr _) (idr _))
-    (unique₂ (pulll π₁∘⟨⟩ ∙ π₂∘⟨⟩) ((pulll π₂∘⟨⟩ ∙ π₁∘⟨⟩)) (idr _) (idr _))
+    (⟨⟩-unique₂ (pulll π₁∘⟨⟩ ∙ π₂∘⟨⟩) ((pulll π₂∘⟨⟩ ∙ π₁∘⟨⟩)) (idr _) (idr _))
+    (⟨⟩-unique₂ (pulll π₁∘⟨⟩ ∙ π₂∘⟨⟩) ((pulll π₂∘⟨⟩ ∙ π₁∘⟨⟩)) (idr _) (idr _))
 
   swap-natural
     : ∀ {A B C D} ((f , g) : Hom A C × Hom B D)
@@ -315,8 +333,8 @@ We also define a handful of common morphisms.
   swap-δ = ⟨⟩-unique (pulll π₁∘⟨⟩ ∙ π₂∘⟨⟩) (pulll π₂∘⟨⟩ ∙ π₁∘⟨⟩)
 
   assoc-δ : ∀ {a} → ×-assoc ∘ (id ⊗₁ δ {a}) ∘ δ {a} ≡ (δ ⊗₁ id) ∘ δ
-  assoc-δ = unique₂
-    (pulll π₁∘⟨⟩ ∙ unique₂
+  assoc-δ = ⟨⟩-unique₂
+    (pulll π₁∘⟨⟩ ∙ ⟨⟩-unique₂
       (pulll π₁∘⟨⟩ ∙ pulll π₁∘⟨⟩ ∙ pullr π₁∘⟨⟩)
       (pulll π₂∘⟨⟩ ∙ pullr (pulll π₂∘⟨⟩) ∙ pulll (pulll π₁∘⟨⟩) ∙ pullr π₂∘⟨⟩)
       (pulll (pulll π₁∘⟨⟩) ∙ pullr π₁∘⟨⟩)
@@ -326,31 +344,54 @@ We also define a handful of common morphisms.
     refl
     (pulll π₂∘⟨⟩ ∙ pullr π₂∘⟨⟩)
 
-  by-π₁ : ∀ {f f' : Hom a b} {g g' : Hom a c} → ⟨ f , g ⟩ ≡ ⟨ f' , g' ⟩ → f ≡ f'
+  by-π₁ : ∀ {X Y Z} {f f' : Hom X Y} {g g' : Hom X Z} → ⟨ f , g ⟩ ≡ ⟨ f' , g' ⟩ → f ≡ f'
   by-π₁ p = sym π₁∘⟨⟩ ∙ ap (π₁ ∘_) p ∙ π₁∘⟨⟩
 
-  extend-π₁ : ∀ {f : Hom a b} {g : Hom a c} {h} → ⟨ f , g ⟩ ≡ h → f ≡ π₁ ∘ h
+  extend-π₁ : ∀ {X Y Z} {f : Hom X Y} {g : Hom X Z} {h} → ⟨ f , g ⟩ ≡ h → f ≡ π₁ ∘ h
   extend-π₁ p = sym π₁∘⟨⟩ ∙ ap (π₁ ∘_) p
 
-  by-π₂ : ∀ {f f' : Hom a b} {g g' : Hom a c} → ⟨ f , g ⟩ ≡ ⟨ f' , g' ⟩ → g ≡ g'
+  by-π₂ : ∀ {X Y Z} {f f' : Hom X Y} {g g' : Hom X Z} → ⟨ f , g ⟩ ≡ ⟨ f' , g' ⟩ → g ≡ g'
   by-π₂ p = sym π₂∘⟨⟩ ∙ ap (π₂ ∘_) p ∙ π₂∘⟨⟩
 
-  extend-π₂ : ∀ {f : Hom a b} {g : Hom a c} {h} → ⟨ f , g ⟩ ≡ h → g ≡ π₂ ∘ h
+  extend-π₂ : ∀ {X Y Z} {f : Hom X Y} {g : Hom X Z} {h} → ⟨ f , g ⟩ ≡ h → g ≡ π₂ ∘ h
   extend-π₂ p = sym π₂∘⟨⟩ ∙ ap (π₂ ∘_) p
 
   π₁-inv
-    : ∀ {f : Hom (a ⊗₀ b) c} {g : Hom (a ⊗₀ b) d}
+    : ∀ {W X Y Z}
+    → {f : Hom (W ⊗₀ X) Y} {g : Hom (W ⊗₀ X) Z}
     → (⟨⟩-inv : is-invertible ⟨ f , g ⟩)
     → f ∘ is-invertible.inv ⟨⟩-inv ≡ π₁
   π₁-inv {f = f} {g = g} ⟨⟩-inv =
     pushl (sym π₁∘⟨⟩) ∙ elimr (is-invertible.invl ⟨⟩-inv)
 
   π₂-inv
-    : ∀ {f : Hom (a ⊗₀ b) c} {g : Hom (a ⊗₀ b) d}
+    : ∀ {W X Y Z}
+    → {f : Hom (W ⊗₀ X) Y} {g : Hom (W ⊗₀ X) Z}
     → (⟨⟩-inv : is-invertible ⟨ f , g ⟩)
     → g ∘ is-invertible.inv ⟨⟩-inv ≡ π₂
   π₂-inv {f = f} {g = g} ⟨⟩-inv =
     pushl (sym π₂∘⟨⟩) ∙ elimr (is-invertible.invl ⟨⟩-inv)
+```
+-->
+
+<!--
+```agda
+to-binary-products
+  : ∀ {o ℓ} {C : Precategory o ℓ}
+  → (∀ A B → Product C A B)
+  → Binary-products C
+to-binary-products {C = C} products = binary-products where
+  module product {A} {B} = Product (products A B)
+  open Binary-products hiding (product)
+
+  binary-products : Binary-products C
+  binary-products ._⊗₀_ A B = product.apex {A} {B}
+  binary-products .π₁ = product.π₁
+  binary-products .π₂ = product.π₂
+  binary-products .⟨_,_⟩ = product.⟨_,_⟩
+  binary-products .π₁∘⟨⟩ = product.π₁∘⟨⟩
+  binary-products .π₂∘⟨⟩ = product.π₂∘⟨⟩
+  binary-products .⟨⟩-unique = product.unique
 ```
 -->
 

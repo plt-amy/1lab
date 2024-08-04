@@ -337,7 +337,7 @@ products, regardless of what $y$ is.
 Sub-products
   : ∀ {y}
   → has-pullbacks B
-  → has-products (Sub y)
+  → Binary-products (Sub y)
 Sub-products {y} pb a b = prod where
   it = pb (a .map) (b .map)
 

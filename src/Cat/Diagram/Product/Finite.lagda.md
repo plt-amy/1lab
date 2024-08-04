@@ -15,7 +15,7 @@ import Cat.Reasoning as Cr
 module Cat.Diagram.Product.Finite
   {o ℓ} {C : Precategory o ℓ}
   (terminal : Terminal C)
-  (products : ∀ A B → Product C A B)
+  (products : Binary-products C)
   where
 ```
 
@@ -27,7 +27,7 @@ open is-product
 open Terminal
 open Product
 open Cr C
-private module Cart = Binary-products C products
+private module Cart = Binary-products products
 open Cart using (_⊗₀_)
 ```
 -->
@@ -83,7 +83,7 @@ Cartesian→standard-finite-products F = prod where
   F-unique {n = zero} F f {h} p = sym $ !-unique terminal _
   F-unique {n = suc zero} F f {h} p = sym (idl h) ∙ p fzero
   F-unique {n = suc (suc n)} F f {h} p =
-    products _ _ .unique (p fzero)
+    Cart.⟨⟩-unique (p fzero)
       (F-unique (λ e → F (fsuc e)) (λ i → f (fsuc i))
         λ i → assoc _ _ _ ∙ p (fsuc i))
 

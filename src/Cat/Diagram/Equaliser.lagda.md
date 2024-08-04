@@ -177,18 +177,62 @@ equalisers of all parallel pairs of morphisms.
 
 
 ```agda
-has-equalisers : ∀ {o ℓ} → Precategory o ℓ → Type _
-has-equalisers C = ∀ {a b} (f g : Hom a b) → Equaliser C f g
-  where open Precategory C
-
-module Equalisers
-  {o ℓ}
-  (C : Precategory o ℓ)
-  (all-equalisers : has-equalisers C)
-  where
+record Equalisers {o ℓ} (C : Precategory o ℓ) : Type (o ⊔ ℓ) where
+  no-eta-equality
   open Cat.Reasoning C
-  module equaliser {a b} (f g : Hom a b) = Equaliser (all-equalisers f g)
-
-  Equ : ∀ {a b} (f g : Hom a b) → Ob
-  Equ = equaliser.apex
+  field
+    Eq : ∀ {X Y} → Hom X Y → Hom X Y → Ob
+    equ : ∀ {X Y} → (f g : Hom X Y) → Hom (Eq f g) X
+    equal : ∀ {X Y} {f g : Hom X Y} → f ∘ equ f g ≡ g ∘ equ f g
+    equate
+      : ∀ {E X Y} {f g : Hom X Y}
+      → (e : Hom E X)
+      → f ∘ e ≡ g ∘ e
+      → Hom E (Eq f g)
+    equ∘equate
+      : ∀ {E X Y} {f g : Hom X Y}
+      → {e : Hom E X} {p : f ∘ e ≡ g ∘ e}
+      → equ f g ∘ equate e p ≡ e
+    equate-unique
+      : ∀ {E X Y} {f g : Hom X Y}
+      → {e : Hom E X} {p : f ∘ e ≡ g ∘ e}
+      → {other : Hom E (Eq f g)}
+      → equ f g ∘ other ≡ e
+      → other ≡ equate e p
 ```
+
+<!--
+```agda
+  equaliser : ∀ {X Y} (f g : Hom X Y) → Equaliser C f g
+  equaliser f g .Equaliser.apex = Eq f g
+  equaliser f g .Equaliser.equ = equ f g
+  equaliser f g .Equaliser.has-is-eq .is-equaliser.equal = equal
+  equaliser f g .Equaliser.has-is-eq .is-equaliser.universal = equate _
+  equaliser f g .Equaliser.has-is-eq .is-equaliser.factors = equ∘equate
+  equaliser f g .Equaliser.has-is-eq .is-equaliser.unique = equate-unique
+
+  private module equaliser {X Y} {f g : Hom X Y} = Equaliser (equaliser f g)
+  open equaliser
+    using (has-is-eq; equal-∘)
+    renaming (unique₂ to equate-unique₂)
+    public
+
+to-equalisers
+  : ∀ {o ℓ} {C : Precategory o ℓ}
+  → (let open Precategory C)
+  → (∀ {X Y} → (f g : Hom X Y) → Equaliser C f g)
+  → Equalisers C
+to-equalisers {C = C} has-equalisers = equalisers where
+  open Precategory C
+  module eq {X Y} {f g : Hom X Y} = Equaliser (has-equalisers f g)
+  open Equalisers
+
+  equalisers : Equalisers C
+  equalisers .Eq f g = eq.apex {f = f} {g = g}
+  equalisers .equ _ _ = eq.equ
+  equalisers .equal = eq.equal
+  equalisers .equate _ = eq.universal
+  equalisers .equ∘equate = eq.factors
+  equalisers .equate-unique = eq.unique
+```
+-->

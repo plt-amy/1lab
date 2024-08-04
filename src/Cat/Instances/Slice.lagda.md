@@ -1,5 +1,7 @@
 <!--
 ```agda
+open import 1Lab.Reflection.Copattern
+
 open import Cat.Diagram.Limit.Finite
 open import Cat.Functor.Conservative
 open import Cat.Functor.Properties
@@ -93,6 +95,7 @@ says that the map $h$ "respects reindexing", or less obliquely
 ```agda
   record /-Hom (a b : /-Obj c) : Type ℓ where
     no-eta-equality
+    constructor /-hom
     private
       module a = /-Obj a
       module b = /-Obj b
@@ -479,16 +482,15 @@ construction _and_ the role of pullbacks.
 ```agda
 module _ {o ℓ} {C : Precategory o ℓ} where
   open Cat.Reasoning C
-  open Pullback
   open /-Obj
   open /-Hom
 ```
 -->
 
 ```agda
-  Slice-pullbacks : ∀ {b} → has-pullbacks C → has-pullbacks (Slice C b)
-  Slice-products  : ∀ {b} → has-pullbacks C → has-products (Slice C b)
-  Slice-lex : ∀ {b} → has-pullbacks C → Finitely-complete (Slice C b)
+  Slice-pullbacks : ∀ {b} → Pullbacks C → Pullbacks (Slice C b)
+  Slice-products  : ∀ {b} → Pullbacks C → Binary-products (Slice C b)
+  Slice-lex : ∀ {b} → Pullbacks C → Finitely-complete (Slice C b)
 ```
 
 <details>
@@ -499,18 +501,20 @@ statements above are just putting things together. We leave them in this
 </summary>
 
 ```agda
-  Slice-pullbacks pullbacks {A = A} f g = pb where
-    pb : Pullback (Slice C _) _ _
-    pb .apex = cut (A .map ∘ pullbacks _ _ .p₁)
-    pb .p₁ = record { commutes = refl }
-    pb .p₂ = record { commutes =
-         sym (pushl (sym (f .commutes))
-      ·· ap₂ _∘_ refl (pullbacks _ _ .square)
-      ·· pulll (g .commutes)) }
-    pb .has-is-pb = pullback-above→pullback-below $
-      pullbacks (f .map) (g .map) .has-is-pb
+  Slice-pullbacks pullbacks = to-pullbacks λ {A} {B} f g → record
+    { apex = cut (A .map ∘ p₁ (f .map) (g .map))
+    ; p₁ = /-hom (p₁ (f .map) (g .map)) refl
+    ; p₂ = /-hom (p₂ (f .map) (g .map))
+      (sym (pushl (sym (f .commutes))
+      ∙ ap₂ _∘_ refl square
+      ∙ pulll (g .commutes)))
+    ; has-is-pb = pullback-above→pullback-below has-is-pb
+    }
+    where open Pullbacks pullbacks
 
-  Slice-products pullbacks f g = Pullback→Fibre-product (pullbacks _ _)
+  Slice-products pullbacks =
+    to-binary-products λ f g → Pullback→Fibre-product (pullback (f .map) (g .map))
+    where open Pullbacks pullbacks
 
   Slice-lex pb = with-pullbacks (Slice C _)
     Slice-terminal-object
@@ -684,12 +688,12 @@ functor**, $\Delta : \cC \to \cC/B$, sends an object $A : \cC$ to the
 projection morphism $\pi_2 : A \times B \to B$.
 
 ```agda
-module _ {o ℓ} {C : Precategory o ℓ} {B} (prod : has-products C) where
-  open Binary-products C prod
+module _ {o ℓ} {C : Precategory o ℓ} {B} (prod : Binary-products C) where
+  open Binary-products prod
   open Cat.Reasoning C
 
   constant-family : Functor C (Slice C B)
-  constant-family .F₀ A = cut (π₂ {a = A})
+  constant-family .F₀ A = cut (π₂ {A = A})
   constant-family .F₁ f .map      = ⟨ f ∘ π₁ , π₂ ⟩
   constant-family .F₁ f .commutes = π₂∘⟨⟩
   constant-family .F-id    = ext (sym (⟨⟩-unique id-comm (idr _)))
@@ -721,20 +725,20 @@ the fibre over $h$ would correspondingly be isomorphic to $A \times \top
 
 ```agda
   constant-family-fibre
-    : (pb : has-pullbacks C)
+    : (pullbacks : Pullbacks C) (let open Pullbacks pullbacks)
     → ∀ {A Y} (h : Hom Y B)
-    → pb (constant-family .F₀ A .map) h .Pullback.apex ≅ (A ⊗₀ Y)
-  constant-family-fibre pb {A} h = make-iso
-    ⟨ π₁ ∘ p₁ , p₂ ⟩ (universal {p₁' = ⟨ π₁ , h ∘ π₂ ⟩} {p₂' = π₂} π₂∘⟨⟩)
-    (⟨⟩∘ _ ∙ sym (Product.unique (prod _ _)
-      (idr _ ∙ sym (pullr p₁∘universal ∙ π₁∘⟨⟩))
-      (idr _ ∙ sym p₂∘universal)))
-    (Pullback.unique₂ (pb _ _) {p = π₂∘⟨⟩ ∙ square}
-      (pulll p₁∘universal ∙ ⟨⟩∘ _ ∙ ap₂ ⟨_,_⟩ π₁∘⟨⟩ (pullr π₂∘⟨⟩ ∙ sym square))
-      (pulll p₂∘universal ∙ π₂∘⟨⟩)
-      (idr _ ∙ Product.unique (prod _ _) refl refl)
+    → Pb (constant-family .F₀ A .map) h ≅ (A ⊗₀ Y)
+  constant-family-fibre pullbacks {A} h = make-iso
+    ⟨ π₁ ∘ p₁ _ _ , p₂ _ _ ⟩ (pb ⟨ π₁ , h ∘ π₂ ⟩ π₂ π₂∘⟨⟩)
+    (⟨⟩∘ _ ∙ sym (⟨⟩-unique
+      (idr _ ∙ sym (pullr p₁∘pb ∙ π₁∘⟨⟩))
+      (idr _ ∙ sym p₂∘pb)))
+    (pb-unique₂ {p = π₂∘⟨⟩ ∙ square}
+      (pulll p₁∘pb ∙ ⟨⟩∘ _ ∙ ap₂ ⟨_,_⟩ π₁∘⟨⟩ (pullr π₂∘⟨⟩ ∙ sym square))
+      (pulll p₂∘pb ∙ π₂∘⟨⟩)
+      (idr _ ∙ ⟨⟩-unique refl refl)
       (idr _))
-    where open Pullback (pb (constant-family .F₀ A .map) h)
+    where open Pullbacks pullbacks
 ```
 
 The constant families functor is a [[right adjoint]] to the projection
@@ -751,7 +755,7 @@ adjunction between dependent sum and base change.
   Forget⊣constant-family : Forget/ ⊣ constant-family
   Forget⊣constant-family .unit .η X .map = ⟨ id , X .map ⟩
   Forget⊣constant-family .unit .η X .commutes = π₂∘⟨⟩
-  Forget⊣constant-family .unit .is-natural _ _ f = ext (unique₂
+  Forget⊣constant-family .unit .is-natural _ _ f = ext (⟨⟩-unique₂
     (pulll π₁∘⟨⟩ ∙ id-comm-sym)
     (pulll π₂∘⟨⟩ ∙ f .commutes)
     (pulll π₁∘⟨⟩ ∙ pullr π₁∘⟨⟩)
@@ -759,7 +763,7 @@ adjunction between dependent sum and base change.
   Forget⊣constant-family .counit .η x = π₁
   Forget⊣constant-family .counit .is-natural _ _ f = π₁∘⟨⟩
   Forget⊣constant-family .zig = π₁∘⟨⟩
-  Forget⊣constant-family .zag = ext (unique₂
+  Forget⊣constant-family .zag = ext (⟨⟩-unique₂
     (pulll π₁∘⟨⟩ ∙ pullr π₁∘⟨⟩)
     (pulll π₂∘⟨⟩ ∙ π₂∘⟨⟩)
     refl

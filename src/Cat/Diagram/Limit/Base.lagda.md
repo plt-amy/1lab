@@ -805,7 +805,6 @@ module _ {o ℓ} {C : Precategory o ℓ} where
     module C = Cat.Reasoning C
     open Indexed-product
     open make-is-limit
-    open Equaliser
 ```
 -->
 
@@ -814,15 +813,16 @@ module _ {o ℓ} {C : Precategory o ℓ} where
     : ∀ {oj ℓj} {J : Precategory oj ℓj}
     → has-products-indexed-by C ⌞ J ⌟
     → has-products-indexed-by C (Arrows J)
-    → has-equalisers C
+    → Equalisers C
     → (F : Functor J C) → Limit F
-  limit-as-equaliser-of-product {oj} {ℓj} {J} has-Ob-prod has-Arrows-prod has-eq F =
+  limit-as-equaliser-of-product {oj} {ℓj} {J} has-Ob-prod has-Arrows-prod equalisers F =
     to-limit (to-is-limit lim) where
 ```
 
 <!--
 ```agda
     module J = Cat.Reasoning J
+    open Equalisers equalisers
     open Functor F
 ```
 -->
@@ -864,10 +864,7 @@ and the second morphism to be the projection of the domain postcomposed with $f$
     s = Cod .tuple λ (a , b , f) → F₁ f C.∘ Obs .π a
     t = Cod .tuple λ (a , b , f) → Obs .π b
 
-    eq : Equaliser C s t
-    eq = has-eq _ _
-
-    lim : make-is-limit F (eq .apex)
+    lim : make-is-limit F (Eq s t)
 ```
 
 <details>
@@ -877,13 +874,13 @@ as the data for a limit.
 </summary>
 
 ```agda
-    lim .ψ c = Obs .π c C.∘ eq .equ
+    lim .ψ c = Obs .π c C.∘ equ s t
     lim .commutes {a} {b} f =
-      F₁ f C.∘ Obs .π a C.∘ eq .equ            ≡˘⟨ C.extendl (Cod .commute) ⟩
-      Cod .π (a , b , f) C.∘ ⌜ s C.∘ eq .equ ⌝ ≡⟨ ap! (eq .equal) ⟩
-      Cod .π (a , b , f) C.∘ t C.∘ eq .equ     ≡⟨ C.pulll (Cod .commute) ⟩
-      Obs .π b C.∘ eq .equ                     ∎
-    lim .universal {x} e comm = eq .universal comm' where
+      F₁ f C.∘ Obs .π a C.∘ equ s t            ≡˘⟨ C.extendl (Cod .commute) ⟩
+      Cod .π (a , b , f) C.∘ ⌜ s C.∘ equ s t ⌝ ≡⟨ ap! equal ⟩
+      Cod .π (a , b , f) C.∘ t C.∘ equ s t     ≡⟨ C.pulll (Cod .commute) ⟩
+      Obs .π b C.∘ equ  s t                    ∎
+    lim .universal {x} e comm = equate e' comm' where
       e' : C.Hom x (Obs .ΠF)
       e' = Obs .tuple e
       comm' : s C.∘ e' ≡ t C.∘ e'
@@ -895,10 +892,10 @@ as the data for a limit.
         Obs .π b C.∘ e'              ≡˘⟨ C.pulll (Cod .commute) ⟩
         Cod .π i C.∘ t C.∘ e'        ∎
     lim .factors {j} e comm =
-      (Obs .π j C.∘ eq .equ) C.∘ lim .universal e comm ≡⟨ C.pullr (eq .factors) ⟩
+      (Obs .π j C.∘ equ s t) C.∘ lim .universal e comm ≡⟨ C.pullr equ∘equate ⟩
       Obs .π j C.∘ Obs .tuple e                        ≡⟨ Obs .commute ⟩
       e j                                              ∎
-    lim .unique e comm u' fac = eq .unique $ Obs .unique _
+    lim .unique e comm u' fac = equate-unique $ Obs .unique _
       λ i → C.assoc _ _ _ ∙ fac i
 ```
 </details>
@@ -910,7 +907,7 @@ all limits.
   products+equalisers→complete
     : ∀ {oj ℓj}
     → has-indexed-products C (oj ⊔ ℓj)
-    → has-equalisers C
+    → Equalisers C
     → is-complete oj ℓj C
   products+equalisers→complete {oj} {ℓj} has-prod has-eq =
     limit-as-equaliser-of-product

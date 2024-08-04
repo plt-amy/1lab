@@ -83,7 +83,7 @@ module _ {ℓ} where
 
   open Terminal
   open is-product
-  open Product
+  open Binary-products
   open is-pullback
   open Pullback
   open is-equaliser
@@ -108,6 +108,8 @@ category of sets of _any_ level $\ell$ admits them.
 Products are given by product sets:
 
 ```agda
+<<<<<<< ours
+<<<<<<< Updated upstream
   Sets-products : (A B : Set ℓ) → Product (Sets ℓ) A B
   Sets-products A B .apex = el! (∣ A ∣ × ∣ B ∣)
   Sets-products A B .π₁ = fst
@@ -116,6 +118,21 @@ Products are given by product sets:
   Sets-products A B .has-is-product .π₁∘⟨⟩ = refl
   Sets-products A B .has-is-product .π₂∘⟨⟩ = refl
   Sets-products A B .has-is-product .unique p q i x = p i x , q i x
+=======
+=======
+>>>>>>> theirs
+  Sets-products : Binary-products (Sets ℓ)
+  Sets-products ._⊗₀_ A B = el! (∣ A ∣ × ∣ B ∣)
+  Sets-products .π₁ = fst
+  Sets-products .π₂ = snd
+  Sets-products .⟨_,_⟩ f g x = f x , g x
+  Sets-products .π₁∘⟨⟩ = refl
+  Sets-products .π₂∘⟨⟩ = refl
+  Sets-products .⟨⟩-unique o p q i x = p i x , q i x
+<<<<<<< ours
+>>>>>>> Stashed changes
+=======
+>>>>>>> theirs
 ```
 
 Equalisers are given by carving out the subset of $A$ where $f$ and $g$ agree

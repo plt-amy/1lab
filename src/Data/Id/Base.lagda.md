@@ -186,6 +186,12 @@ apᵢ
   → x ≡ᵢ y → f x ≡ᵢ f y
 apᵢ f reflᵢ = reflᵢ
 
+ap₂ᵢ
+  : ∀ {ℓ ℓ' ℓ''} {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''}
+  → {a b : A} {x y : B}
+  → (f : A → B → C)
+  → a ≡ᵢ b → x ≡ᵢ y → f a x ≡ᵢ f b y
+ap₂ᵢ f reflᵢ reflᵢ = reflᵢ
 
 Jᵢ
   : ∀ {ℓ ℓ'} {A : Type ℓ} {x : A} (P : (y : A) → x ≡ᵢ y → Type ℓ')

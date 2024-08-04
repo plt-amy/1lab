@@ -76,18 +76,9 @@ to give a terminal object and binary products.
   record Finitely-complete : Type (ℓ ⊔ ℓ') where
     field
       terminal   : Terminal C
-      products   : has-products C
-      equalisers : has-equalisers C
-      pullbacks  : has-pullbacks C
-
-    Eq : ∀ {A B} (f g : Hom A B) → Ob
-    Eq f g = equalisers f g .Equaliser.apex
-
-    Pb : ∀ {A B C} (f : Hom A C) (g : Hom B C) → Ob
-    Pb f g = pullbacks f g .Pullback.apex
-
-    module Products = Binary-products C products
-    open Products using (_⊗₀_) public
+      products   : Binary-products C
+      equalisers : Equalisers C
+      pullbacks  : Pullbacks C
 
   open Finitely-complete
 ```
@@ -111,9 +102,9 @@ products).
   is-finitely-complete→Finitely-complete flim = Flim where
     Flim : Finitely-complete
     Flim .terminal = Limit→Terminal C (flim finite-cat _)
-    Flim .products a b = Limit→Product C (flim Disc-finite _)
-    Flim .equalisers f g = Limit→Equaliser C (flim ·⇉·-finite _)
-    Flim .pullbacks f g = Limit→Pullback C {lzero} {lzero} (flim ·→·←·-finite _)
+    Flim .products = to-binary-products λ a b → Limit→Product C (flim Disc-finite _)
+    Flim .equalisers = to-equalisers λ f g → Limit→Equaliser C (flim ·⇉·-finite _)
+    Flim .pullbacks = to-pullbacks λ f g → Limit→Pullback C {lzero} {lzero} (flim ·→·←·-finite _)
 ```
 
 ## With equalisers
@@ -158,13 +149,13 @@ $f, g$ agree. In particular, the pullback we want is the object $X
 ~~~
 
 ```agda
-  product-equaliser→pullback
+  product+equaliser→pullback
     : ∀ {E P X Y Z} {p1 : Hom P X} {p2 : Hom P Y} {f : Hom X Z}
         {g : Hom Y Z} {e : Hom E P}
     → is-product C p1 p2
     → is-equaliser C (f ∘ p1) (g ∘ p2) e
     → is-pullback C (p1 ∘ e) f (p2 ∘ e) g
-  product-equaliser→pullback {p1 = p1} {p2} {f} {g} {e} prod eq = pb where
+  product+equaliser→pullback {p1 = p1} {p2} {f} {g} {e} prod eq = pb where
     open is-pullback
     module eq = is-equaliser eq
     module pr = is-product prod
@@ -204,23 +195,36 @@ equalisers to factor _that_ as a unique arrow $P' \to X \times_Z Y$.
       eq.unique (pr.unique (assoc _ _ _ ∙ p) (assoc _ _ _ ∙ q))
 ```
 
+<!--
+```agda
+  products+equalisers→pullbacks
+    : Binary-products C
+    → Equalisers C
+    → Pullbacks C
+  products+equalisers→pullbacks prods eqs = pbs where
+    open Binary-products prods
+    open Equalisers eqs
+
+    pbs : Pullbacks C
+    pbs = to-pullbacks λ f g → record {
+       has-is-pb = product+equaliser→pullback has-is-product has-is-eq
+     }
+```
+-->
+
 Hence, assuming that a category has a terminal object, binary products
 and binary equalisers means it also admits pullbacks.
 
 ```agda
   with-equalisers
     : Terminal C
-    → (∀ A B → Product C A B)
-    → (∀ {A B} (f g : Hom A B) → Equaliser C f g)
+    → Binary-products C
+    → Equalisers C
     → Finitely-complete
-  with-equalisers top prod equ .terminal   = top
-  with-equalisers top prod equ .products   = prod
-  with-equalisers top prod equ .equalisers = equ
-  with-equalisers top prod equ .pullbacks {A} {B} {X} f g =
-    record { has-is-pb = product-equaliser→pullback Prod.has-is-product Equ.has-is-eq }
-    where
-      module Prod = Product (prod A B)
-      module Equ = Equaliser (equ (f ∘ Prod.π₁) (g ∘ Prod.π₂))
+  with-equalisers top prods eqs .terminal = top
+  with-equalisers top prods eqs .products = prods
+  with-equalisers top prods eqs .equalisers = eqs
+  with-equalisers top prods eqs .pullbacks = products+equalisers→pullbacks prods eqs
 ```
 
 
@@ -234,10 +238,10 @@ the one on the right) by adding in the unique arrows into the terminal
 object $*$.
 
 ```agda
-  terminal-pullback→product
+  terminal+pullback→product
     : ∀ {P X Y T} {p1 : Hom P X} {p2 : Hom P Y} {f : Hom X T} {g : Hom Y T}
     → is-terminal C T → is-pullback C p1 f p2 g → is-product C p1 p2
-  terminal-pullback→product {p1 = p1} {p2} {f} {g} term pb = prod where
+  terminal+pullback→product {p1 = p1} {p2} {f} {g} term pb = prod where
 ```
 
 <div class=mathpar>
@@ -283,19 +287,6 @@ object $*$.
     prod .is-product.π₁∘⟨⟩ = Pb.p₁∘universal
     prod .is-product.π₂∘⟨⟩ = Pb.p₂∘universal
     prod .is-product.unique p q = Pb.unique p q
-
-  with-pullbacks
-    : Terminal C
-    → (∀ {A B X} (f : Hom A X) (g : Hom B X) → Pullback C f g)
-    → Finitely-complete
-  with-pullbacks top pb = fc where
-    module top = Terminal top
-    mkprod : ∀ A B → Product C A B
-    mkprod A B = record { has-is-product = terminal-pullback→product top.has⊤ pb' }
-      where pb' = pb (top.has⊤ A .centre) (top.has⊤ B .centre) .Pullback.has-is-pb
-
-    mkeq : ∀ {A B} (f g : Hom A B) → Equaliser C f g
-    mkeq {A = A} {B} f g = eq where
 ```
 
 For equalisers, the situation is a bit more complicated. Recall that, by
@@ -319,24 +310,20 @@ along the diagonal map:
 \end{tikzcd}\]
 ~~~
 
-<!--
 ```agda
-      module Bb = Product (mkprod B B)
-      ⟨id,id⟩ : Hom B Bb.apex
-      ⟨id,id⟩ = Bb.⟨ id , id ⟩
-
-      ⟨f,g⟩ : Hom A Bb.apex
-      ⟨f,g⟩ = Bb.⟨ f , g ⟩
-
-      module Pb = Pullback (pb ⟨id,id⟩ ⟨f,g⟩)
-
-      open is-equaliser
-      open Equaliser
+  product+pullback→equaliser
+    : ∀ {E X Y Y²}
+    → {f g : Hom X Y} {e : Hom E X} {π₁ π₂ : Hom Y² Y} {p₁ : Hom E Y}
+    → (is-prod : is-product C π₁ π₂) (let open is-product is-prod)
+    → (is-pb : is-pullback C p₁ ⟨ id , id ⟩ e ⟨ f , g ⟩)
+    → is-equaliser C f g e
+  product+pullback→equaliser {f = f} {g} {e} {π₁} {π₂} {p₁} is-prod is-pb = is-eq where
+    open is-product is-prod renaming (unique₂ to ⟨⟩-unique₂)
+    open is-pullback is-pb renaming (unique to pb-unique)
 ```
--->
 
 The actual equaliser map is the top, horizontal face (what the code
-calls `Pb.p₂`{.Agda}), so we must show that, composed with this map, $f$
+calls `e`, so we must show that, composed with this map, $f$
 and $g$ become equal. Here's where we use the fact that pullback
 squares, well, commute: We know that $f$ is $\pi_1 \circ \langle f , g
 \rangle$, and that $\langle f , g \rangle \circ \rm{equ} = \langle
@@ -346,17 +333,16 @@ But both projections out of $\langle \id, \id \rangle$
 are equal, so we can apply commutativity of the square above _again_ to
 conclude that $f \circ \rm{equ} = g \circ \rm{equ}$.
 
+
 ```agda
-      eq : Equaliser C f g
-      eq .apex = Pb.apex
-      eq .equ = Pb.p₂
-      eq .has-is-eq .equal =
-        f ∘ Pb.p₂               ≡˘⟨ pulll Bb.π₁∘⟨⟩ ⟩
-        Bb.π₁ ∘ ⟨f,g⟩ ∘ Pb.p₂   ≡⟨ ap (Bb.π₁ ∘_) (sym Pb.square) ⟩
-        Bb.π₁ ∘ ⟨id,id⟩ ∘ Pb.p₁ ≡⟨ pulll Bb.π₁∘⟨⟩ ∙ sym (pulll Bb.π₂∘⟨⟩) ⟩
-        Bb.π₂ ∘ ⟨id,id⟩ ∘ Pb.p₁ ≡⟨ ap (Bb.π₂ ∘_) Pb.square ⟩
-        Bb.π₂ ∘ ⟨f,g⟩ ∘ Pb.p₂   ≡⟨ pulll Bb.π₂∘⟨⟩ ⟩
-        g ∘ Pb.p₂               ∎
+    is-eq : is-equaliser C f g e
+    is-eq .is-equaliser.equal =
+      f ∘ e                 ≡˘⟨ pulll π₁∘⟨⟩ ⟩
+      π₁ ∘ ⟨ f , g ⟩ ∘ e    ≡˘⟨ ap₂ _∘_ refl square ⟩
+      π₁ ∘ ⟨ id , id ⟩ ∘ p₁ ≡⟨ extendl (π₁∘⟨⟩ ∙ sym (π₂∘⟨⟩)) ⟩
+      π₂ ∘ ⟨ id , id ⟩ ∘ p₁ ≡⟨ ap₂ _∘_ refl square ⟩
+      π₂ ∘ ⟨ f , g ⟩ ∘ e    ≡⟨ pulll π₂∘⟨⟩ ⟩
+      g ∘ e ∎
 ```
 
 We must now show that if $e'$ is another map which equalises $f$ and
@@ -386,46 +372,77 @@ top face $\rm{equ} : \rm{eq}(f,g) \to A$ in our pullback diagram
 is indeed the equaliser of $f$ and $g$.
 
 ```agda
-      eq .has-is-eq .universal {e' = e'} p =
-        Pb.universal (Bb.unique₂ refl refl (sym p1) (sym p2))
-        where
-          p1 : Bb.π₁ ∘ ⟨id,id⟩ ∘ f ∘ e' ≡ Bb.π₁ ∘ ⟨f,g⟩ ∘ e'
-          p1 =
-            Bb.π₁ ∘ ⟨id,id⟩ ∘ f ∘ e'   ≡⟨ cancell Bb.π₁∘⟨⟩ ⟩
-            f ∘ e'                     ≡˘⟨ pulll Bb.π₁∘⟨⟩ ⟩
-            Bb.π₁ ∘ ⟨f,g⟩ ∘ e'         ∎
-
-          p2 : Bb.π₂ ∘ ⟨id,id⟩ ∘ f ∘ e' ≡ Bb.π₂ ∘ ⟨f,g⟩ ∘ e'
-          p2 =
-            Bb.π₂ ∘ ⟨id,id⟩ ∘ f ∘ e'   ≡⟨ cancell Bb.π₂∘⟨⟩ ⟩
-            f ∘ e'                     ≡⟨ p ⟩
-            g ∘ e'                     ≡˘⟨ pulll Bb.π₂∘⟨⟩ ⟩
-            Bb.π₂ ∘ ⟨f,g⟩ ∘ e'         ∎
-
-      eq .has-is-eq .factors = Pb.p₂∘universal
-      eq .has-is-eq .unique {F} {e' = e'} {other = other} p₂∘l=e' =
-        Pb.unique path p₂∘l=e'
-        where
-          path : Pb.p₁ ∘ other ≡ f ∘ e'
-          path =
-            Pb.p₁ ∘ other                   ≡⟨ insertl Bb.π₁∘⟨⟩ ⟩
-            Bb.π₁ ∘ ⟨id,id⟩ ∘ Pb.p₁ ∘ other ≡⟨ ap (Bb.π₁ ∘_) (extendl Pb.square) ⟩
-            Bb.π₁ ∘ ⟨f,g⟩ ∘ Pb.p₂ ∘ other   ≡⟨ ap (Bb.π₁ ∘_) (ap (⟨f,g⟩ ∘_) p₂∘l=e') ⟩
-            Bb.π₁ ∘ ⟨f,g⟩ ∘ e'              ≡⟨ pulll Bb.π₁∘⟨⟩ ⟩
-            f ∘ e'                          ∎
+    is-eq .is-equaliser.universal {e' = e'} p =
+      universal {p₁' = f ∘ e'} {p₂' = e'} comm
+      where abstract
+        comm : ⟨ id , id ⟩ ∘ f ∘ e' ≡ (⟨ f , g ⟩ ∘ e')
+        comm =
+          ⟨⟩-unique₂
+            (cancell π₁∘⟨⟩) (cancell π₂∘⟨⟩)
+            (pulll π₁∘⟨⟩) (pulll π₂∘⟨⟩ ∙ sym p)
+    is-eq .is-equaliser.factors = p₂∘universal
+    is-eq .is-equaliser.unique {e' = e'} {p = p} {other = other} e∘other=e' =
+      pb-unique
+        p₁∘other=f∘e'
+        e∘other=e'
+      where
+        p₁∘other=f∘e' : p₁ ∘ other ≡ f ∘ e'
+        p₁∘other=f∘e' =
+          p₁ ∘ other                    ≡⟨ insertl π₁∘⟨⟩ ⟩
+          π₁ ∘ ⟨ id , id ⟩ ∘ p₁ ∘ other ≡⟨ ap₂ _∘_ refl (extendl square) ⟩
+          π₁ ∘ ⟨ f , g ⟩ ∘ e ∘ other    ≡⟨ pulll π₁∘⟨⟩ ⟩
+          f ∘ e ∘ other                 ≡⟨ ap₂ _∘_ refl e∘other=e' ⟩
+          f ∘ e' ∎
 ```
+
+
+<!--
+```agda
+  terminal+pullbacks→products
+    : Terminal C
+    → Pullbacks C
+    → Binary-products C
+  terminal+pullbacks→products top pullbacks =
+    to-binary-products λ A B → record {
+       has-is-product = terminal+pullback→product {f = !} {g = !} has⊤ has-is-pb
+    }
+    where
+      open Terminal top
+      open Pullbacks pullbacks
+
+  products+pullbacks→equalisers
+    : Binary-products C
+    → Pullbacks C
+    → Equalisers C
+  products+pullbacks→equalisers products pullbacks =
+    to-equalisers λ f g → record {
+      has-is-eq = product+pullback→equaliser has-is-product has-is-pb
+    }
+    where
+      open Binary-products products
+      open Pullbacks pullbacks
+```
+-->
 
 Putting it all together into a record we get our proof of finite completeness:
 
 ```agda
+  with-pullbacks
+    : Terminal C
+    → Pullbacks C
+    → Finitely-complete
+  with-pullbacks top pbs = fc where
+    prods : Binary-products C
+    prods = terminal+pullbacks→products top pbs
+
     fc : Finitely-complete
     fc .terminal = top
-    fc .products = mkprod
-    fc .equalisers = mkeq
-    fc .pullbacks = pb
+    fc .products = prods
+    fc .equalisers = products+pullbacks→equalisers prods pbs
+    fc .pullbacks = pbs
 ```
 
-<!--
+-- <!--
 ```agda
   product→terminal-pullback
     : ∀ {P X Y T} {p1 : Hom P X} {p2 : Hom P Y} {f : Hom X T} {g : Hom Y T}
@@ -443,8 +460,9 @@ Putting it all together into a record we get our proof of finite completeness:
     : ∀ {a b} → is-complete a b C → Finitely-complete
   is-complete→finitely {a} {b} compl = with-pullbacks term' pb
     where
-      pb : ∀ {x y z} (f : Hom x z) (g : Hom y z) → Pullback C f g
-      pb f g = Limit→Pullback C (compl (cospan→cospan-diagram _ _ f g))
+      pb : Pullbacks C
+      pb = to-pullbacks λ f g →
+        Limit→Pullback C (compl (cospan→cospan-diagram _ _ f g))
 
       idx : Precategory a b
       idx = Lift-cat a b (Disc ⊥ λ x → absurd x)
@@ -510,7 +528,7 @@ products.
       → is-terminal C T
       → is-product C p1 p2
       → is-product D (F.₁ p1) (F.₁ p2)
-    pres-product term pr = terminal-pullback→product D (pres-⊤ term)
+    pres-product term pr = terminal+pullback→product D (pres-⊤ term)
       (pres-pullback {f = term _ .centre} {g = term _ .centre}
         (product→terminal-pullback C term pr))
 ```

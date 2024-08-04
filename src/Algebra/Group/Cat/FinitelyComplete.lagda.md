@@ -257,9 +257,10 @@ Groups-finitely-complete = with-equalisers (Groups ℓ) top prod Groups-equalise
     top .Terminal.top = Zero-group
     top .Terminal.has⊤ = Zero-group-is-terminal
 
-    prod : ∀ A B → Product (Groups ℓ) A B
-    prod A B .Product.apex = Direct-product A B
-    prod A B .Product.π₁ = proj₁
-    prod A B .Product.π₂ = proj₂
-    prod A B .Product.has-is-product = Direct-product-is-product
+    prod : Binary-products (Groups ℓ)
+    prod = to-binary-products $ λ where
+      A B .Product.apex → Direct-product A B
+      A B .Product.π₁ → proj₁
+      A B .Product.π₂ → proj₂
+      A B .Product.has-is-product → Direct-product-is-product
 ```

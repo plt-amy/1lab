@@ -1,6 +1,7 @@
 <!--
 ```agda
 open import 1Lab.Reflection
+open import Data.Id.Base
 
 open import Cat.Diagram.Product
 open import Cat.Prelude
@@ -26,9 +27,9 @@ into our internal expression type.
 [category solver]: Cat.Solver.html
 
 ```agda
-module NbE {o ℓ} (𝒞 : Precategory o ℓ) (cartesian : ∀ A B → Product 𝒞 A B) where
+module NbE {o ℓ} {𝒞 : Precategory o ℓ} (prod : Binary-products 𝒞) where
   open Cat.Reasoning 𝒞
-  open Binary-products 𝒞 cartesian
+  open Binary-products prod
 ```
 
 ## Expressions
@@ -39,21 +40,27 @@ category with binary products over a quiver, but we are working
 with un-quotiented syntax.
 
 ```agda
-  data ‶Ob‶ : Type (o ⊔ ℓ) where
-    _‶⊗‶_ : ‶Ob‶ → ‶Ob‶ → ‶Ob‶
-    ‶_‶   : Ob → ‶Ob‶
+  data “Ob” : Type (o ⊔ ℓ) where
+    _“⊗”_ : “Ob” → “Ob” → “Ob”
+    “_”   : Ob → “Ob”
 
-  ⟦_⟧ₒ : ‶Ob‶ → Ob
-  ⟦ X ‶⊗‶ Y ⟧ₒ =  ⟦ X ⟧ₒ ⊗₀ ⟦ Y ⟧ₒ
-  ⟦ ‶ X ‶ ⟧ₒ = X
+  sem-ob : “Ob” → Ob
+  sem-ob (X “⊗” Y) = sem-ob X ⊗₀ sem-ob Y
+  sem-ob “ X ” = X
 
-  data Expr : ‶Ob‶ → ‶Ob‶ → Type (o ⊔ ℓ) where
-    ‶id‶    : ∀ {X} → Expr X X
-    _‶∘‶_   : ∀ {X Y Z} → Expr Y Z → Expr X Y → Expr X Z
-    ‶π₁‶    : ∀ {X Y} → Expr (X ‶⊗‶ Y) X
-    ‶π₂‶    : ∀ {X Y} → Expr (X ‶⊗‶ Y) Y
-    ‶⟨_,_⟩‶ : ∀ {X Y Z} → Expr X Y → Expr X Z → Expr X (Y ‶⊗‶ Z)
-    ‶_‶     : ∀ {X Y} → Hom ⟦ X ⟧ₒ ⟦ Y ⟧ₒ → Expr X Y
+  instance
+    Brackets-“Ob” : ⟦⟧-notation “Ob”
+    Brackets-“Ob” .⟦⟧-notation.lvl = o
+    Brackets-“Ob” .⟦⟧-notation.Sem = Ob
+    Brackets-“Ob” .⟦⟧-notation.⟦_⟧ = sem-ob
+
+  data “Hom” : “Ob” → “Ob” → Type (o ⊔ ℓ) where
+    “id”    : ∀ {X} → “Hom” X X
+    _“∘”_   : ∀ {X Y Z} → “Hom” Y Z → “Hom” X Y → “Hom” X Z
+    “π₁”    : ∀ {X Y} → “Hom” (X “⊗” Y) X
+    “π₂”    : ∀ {X Y} → “Hom” (X “⊗” Y) Y
+    “⟨_,_⟩” : ∀ {X Y Z} → “Hom” X Y → “Hom” X Z → “Hom” X (Y “⊗” Z)
+    “_”     : ∀ {X Y} → Hom ⟦ X ⟧ ⟦ Y ⟧ → “Hom” X Y
 ```
 
 Note that we also define a syntax for products of objects
@@ -95,13 +102,19 @@ Next, we define an interpretation of expressions back into morphisms.
 This will be used to state the all-important soundness theorem.
 
 ```agda
-  ⟦_⟧ₑ : ∀ {X Y} → Expr X Y → Hom ⟦ X ⟧ₒ ⟦ Y ⟧ₒ
-  ⟦ ‶id‶ ⟧ₑ = id
-  ⟦ e1 ‶∘‶ e2 ⟧ₑ = ⟦ e1 ⟧ₑ ∘ ⟦ e2 ⟧ₑ
-  ⟦ ‶π₁‶ ⟧ₑ = π₁
-  ⟦ ‶π₂‶ ⟧ₑ = π₂
-  ⟦ ‶⟨ e1 , e2 ⟩‶ ⟧ₑ = ⟨ ⟦ e1 ⟧ₑ , ⟦ e2 ⟧ₑ ⟩
-  ⟦ ‶ f ‶ ⟧ₑ = f
+  sem-hom : ∀ {X Y} → “Hom” X Y → Hom ⟦ X ⟧ ⟦ Y ⟧
+  sem-hom “id” = id
+  sem-hom (f “∘” g) = sem-hom f ∘ sem-hom g
+  sem-hom “π₁” = π₁
+  sem-hom “π₂” = π₂
+  sem-hom “⟨ f , g ⟩” = ⟨ sem-hom f , sem-hom g ⟩
+  sem-hom “ f ” = f
+
+  instance
+    Brackets-“Hom” : ∀ {X Y} → ⟦⟧-notation (“Hom” X Y)
+    Brackets-“Hom” .⟦⟧-notation.lvl = _
+    Brackets-“Hom” .⟦⟧-notation.Sem = _
+    Brackets-“Hom” .⟦⟧-notation.⟦_⟧ = sem-hom
 ```
 
 ## Values
@@ -113,19 +126,19 @@ the normal associativity/identity equations, but those will be handled
 by evaluating our expressions into presheaves.
 
 ```agda
-  data Value : ‶Ob‶ → ‶Ob‶ → Type (o ⊔ ℓ) where
-    vhom  : ∀ {X Y} → Hom ⟦ X ⟧ₒ ⟦ Y ⟧ₒ → Value X Y
-    vpair : ∀ {X Y Z} → Value X Y → Value X Z → Value X (Y ‶⊗‶ Z)
+  data Value : “Ob” → “Ob” → Type (o ⊔ ℓ) where
+    vhom  : ∀ {X Y} → Hom ⟦ X ⟧ ⟦ Y ⟧ → Value X Y
+    vpair : ∀ {X Y Z} → Value X Y → Value X Z → Value X (Y “⊗” Z)
 ```
 
 We now define our eliminators for values.
 
 ```agda
-  vfst : ∀ {X Y Z} → Value X (Y ‶⊗‶ Z) → Value X Y
+  vfst : ∀ {X Y Z} → Value X (Y “⊗” Z) → Value X Y
   vfst (vhom f) = vhom (π₁ ∘ f)
   vfst (vpair v1 v2) = v1
 
-  vsnd : ∀ {X Y Z} → Value X (Y ‶⊗‶ Z) → Value X Z
+  vsnd : ∀ {X Y Z} → Value X (Y “⊗” Z) → Value X Z
   vsnd (vhom f) = vhom (π₂ ∘ f)
   vsnd (vpair v1 v2) = v2
 
@@ -136,7 +149,7 @@ We now define our eliminators for values.
 ## Quotation
 
 As noted above, our quotation is type-directed to make applying η-laws
-easier. When we encounter a `v : Value X (Y ‶⊗‶ Z)`, we will always
+easier. When we encounter a `v : Value X (Y “⊗” Z)`, we will always
 η-expand it using the eliminators defined above. If `v` is a
 `vpair`{.Agda}, then the eliminators will compute away, and we will be
 left with the same value we started with. If `v` is a `vhom`{.Agda},
@@ -147,9 +160,9 @@ As a terminological note, we call this function `reflect` because
 `quote` is a reserved keyword in Agda.
 
 ```agda
-  reflect : ∀ X Y → Value X Y → Hom ⟦ X ⟧ₒ ⟦ Y ⟧ₒ
-  reflect X (Y ‶⊗‶ Z) v = ⟨ (reflect X Y (vfst v)) , reflect X Z (vsnd v) ⟩
-  reflect X ‶ Y ‶ (vhom f) = f
+  reflect : ∀ X Y → Value X Y → Hom ⟦ X ⟧ ⟦ Y ⟧
+  reflect X (Y “⊗” Z) v = ⟨ (reflect X Y (vfst v)) , reflect X Z (vsnd v) ⟩
+  reflect X “ Y ” (vhom f) = f
 ```
 
 
@@ -163,19 +176,19 @@ as the equation that `⟨ f , g ⟩ ∘ h ≡ ⟨ f ∘ h , g ∘ h ⟩`.
 [category solver]: Cat.Solver.html
 
 ```agda
-  eval : ∀ {X Y Z} → Expr Y Z → Value X Y → Value X Z
-  eval ‶id‶ v = v
-  eval (e1 ‶∘‶ e2) v = eval e1 (eval e2 v)
-  eval ‶π₁‶ v = vfst v
-  eval ‶π₂‶ v = vsnd v
-  eval ‶⟨ e1 , e2 ⟩‶ v = vpair (eval e1 v) (eval e2 v)
-  eval ‶ f ‶ v = vhom (f ∘ reflect _ _ v)
+  eval : ∀ {X Y Z} → “Hom” Y Z → Value X Y → Value X Z
+  eval “id” v = v
+  eval (e1 “∘” e2) v = eval e1 (eval e2 v)
+  eval “π₁” v = vfst v
+  eval “π₂” v = vsnd v
+  eval “⟨ e1 , e2 ⟩” v = vpair (eval e1 v) (eval e2 v)
+  eval “ f ” v = vhom (f ∘ reflect _ _ v)
 ```
 
 As noted earlier, we obtain normal forms by evaluating then quoting.
 
 ```agda
-  nf : ∀ X Y → Expr X Y → Hom ⟦ X ⟧ₒ ⟦ Y ⟧ₒ
+  nf : ∀ X Y → “Hom” X Y → Hom ⟦ X ⟧ ⟦ Y ⟧
   nf X Y e = reflect X Y (eval e vid)
 ```
 
@@ -185,12 +198,12 @@ Before proving soundness, we need to prove the normal battery of random
 lemmas. The first states that quoting a `vhom f` gives us back `f`.
 
 ```agda
-  vhom-sound : ∀ X Y → (f : Hom ⟦ X ⟧ₒ ⟦ Y ⟧ₒ) → reflect X Y (vhom f) ≡ f
-  vhom-sound X (Y ‶⊗‶ Z) f =
+  vhom-sound : ∀ X Y → (f : Hom ⟦ X ⟧ ⟦ Y ⟧) → reflect X Y (vhom f) ≡ f
+  vhom-sound X (Y “⊗” Z) f =
     ⟨ reflect X Y (vhom (π₁ ∘ f)) , reflect X Z (vhom (π₂ ∘ f)) ⟩ ≡⟨ ap₂ ⟨_,_⟩ (vhom-sound X Y (π₁ ∘ f)) (vhom-sound X Z (π₂ ∘ f)) ⟩
     ⟨ π₁ ∘ f , π₂ ∘ f ⟩                                           ≡˘⟨ ⟨⟩-unique refl refl ⟩
     f                                                             ∎
-  vhom-sound X ‶ x ‶ f = refl
+  vhom-sound X “ Y ” f = refl
 ```
 
 Next, some soundless lemmas for our eliminators. We want to show that
@@ -198,20 +211,20 @@ applying each eliminator to a value corresponds to the correct thing
 once interpreted into our category `𝒞`.
 
 ```agda
-  vfst-sound : ∀ X Y Z → (v : Value X (Y ‶⊗‶ Z)) → reflect X Y (vfst v) ≡ π₁ ∘ reflect X (Y ‶⊗‶ Z) v
+  vfst-sound : ∀ X Y Z → (v : Value X (Y “⊗” Z)) → reflect X Y (vfst v) ≡ π₁ ∘ reflect X (Y “⊗” Z) v
   vfst-sound X Y Z (vhom f) =
     reflect X Y (vhom (π₁ ∘ f))       ≡⟨ vhom-sound X Y (π₁ ∘ f) ⟩
-    π₁ ∘ f                            ≡˘⟨ refl⟩∘⟨ vhom-sound X (Y ‶⊗‶ Z) f ⟩
-    π₁ ∘ reflect X (Y ‶⊗‶ Z) (vhom f) ∎
+    π₁ ∘ f                            ≡˘⟨ refl⟩∘⟨ vhom-sound X (Y “⊗” Z) f ⟩
+    π₁ ∘ reflect X (Y “⊗” Z) (vhom f) ∎
   vfst-sound X Y Z (vpair v1 v2) =
     reflect X Y v1                               ≡˘⟨ π₁∘⟨⟩ ⟩
     π₁ ∘ ⟨ (reflect X Y v1) , (reflect X Z v2) ⟩ ∎
 
-  vsnd-sound : ∀ X Y Z → (v : Value X (Y ‶⊗‶ Z)) → reflect X Z (vsnd v) ≡ π₂ ∘ reflect X (Y ‶⊗‶ Z) v
+  vsnd-sound : ∀ X Y Z → (v : Value X (Y “⊗” Z)) → reflect X Z (vsnd v) ≡ π₂ ∘ reflect X (Y “⊗” Z) v
   vsnd-sound X Y Z (vhom f) =
     reflect X Z (vhom (π₂ ∘ f))       ≡⟨ vhom-sound X Z (π₂ ∘ f) ⟩
-    π₂ ∘ f                            ≡˘⟨ refl⟩∘⟨ vhom-sound X (Y ‶⊗‶ Z) f ⟩
-    π₂ ∘ reflect X (Y ‶⊗‶ Z) (vhom f) ∎
+    π₂ ∘ f                            ≡˘⟨ refl⟩∘⟨ vhom-sound X (Y “⊗” Z) f ⟩
+    π₂ ∘ reflect X (Y “⊗” Z) (vhom f) ∎
   vsnd-sound X Y Z (vpair v1 v2) =
     reflect X Z v2                               ≡˘⟨ π₂∘⟨⟩ ⟩
     π₂ ∘ ⟨ (reflect X Y v1) , (reflect X Z v2) ⟩ ∎
@@ -222,28 +235,28 @@ We handle composition of values by interpreting expressions as functions
 soundness for our interpretation of composition.
 
 ```agda
-  sound-k : ∀ X Y Z → (e : Expr Y Z) → (v : Value X Y)
-          → reflect X Z (eval e v) ≡ ⟦ e ⟧ₑ ∘ reflect X Y v
-  sound-k X Y Y ‶id‶ v = sym (idl _)
-  sound-k X Y Z (e1 ‶∘‶ e2) v =
+  sound-k : ∀ X Y Z → (e : “Hom” Y Z) → (v : Value X Y)
+          → reflect X Z (eval e v) ≡ ⟦ e ⟧ ∘ reflect X Y v
+  sound-k X Y Y “id” v = sym (idl _)
+  sound-k X Y Z (e1 “∘” e2) v =
     reflect X Z (eval e1 (eval e2 v)) ≡⟨ sound-k X _ Z e1 (eval e2 v) ⟩
-    ⟦ e1 ⟧ₑ ∘ reflect X _ (eval e2 v) ≡⟨ refl⟩∘⟨ sound-k X Y _ e2 v ⟩
-    ⟦ e1 ⟧ₑ ∘ ⟦ e2 ⟧ₑ ∘ reflect X Y v ≡⟨ assoc _ _ _ ⟩
-    ⟦ e1 ‶∘‶ e2 ⟧ₑ ∘ reflect X Y v    ∎
-  sound-k X (Y ‶⊗‶ Z) Y ‶π₁‶ v = vfst-sound X Y Z v
-  sound-k X (Y ‶⊗‶ Z) Z ‶π₂‶ v = vsnd-sound X Y Z v
-  sound-k X Y (Z1 ‶⊗‶ Z2) ‶⟨ e1 , e2 ⟩‶ v =
+    ⟦ e1 ⟧ ∘ reflect X _ (eval e2 v) ≡⟨ refl⟩∘⟨ sound-k X Y _ e2 v ⟩
+    ⟦ e1 ⟧ ∘ ⟦ e2 ⟧ ∘ reflect X Y v ≡⟨ assoc _ _ _ ⟩
+    ⟦ e1 “∘” e2 ⟧ ∘ reflect X Y v    ∎
+  sound-k X (Y “⊗” Z) Y “π₁” v = vfst-sound X Y Z v
+  sound-k X (Y “⊗” Z) Z “π₂” v = vsnd-sound X Y Z v
+  sound-k X Y (Z1 “⊗” Z2) “⟨ e1 , e2 ⟩” v =
     ⟨ reflect X Z1 (eval e1 v) , reflect X Z2 (eval e2 v) ⟩ ≡⟨ ap₂ ⟨_,_⟩ (sound-k X Y Z1 e1 v) (sound-k X Y Z2 e2 v) ⟩
-    ⟨ ⟦ e1 ⟧ₑ ∘ reflect X Y v , ⟦ e2 ⟧ₑ ∘ reflect X Y v ⟩   ≡˘⟨ ⟨⟩∘ _ ⟩
-    ⟨ ⟦ e1 ⟧ₑ , ⟦ e2 ⟧ₑ ⟩ ∘ reflect X Y v                   ∎
-  sound-k X Y Z ‶ x ‶ v = vhom-sound X Z _
+    ⟨ ⟦ e1 ⟧ ∘ reflect X Y v , ⟦ e2 ⟧ ∘ reflect X Y v ⟩   ≡˘⟨ ⟨⟩∘ _ ⟩
+    ⟨ ⟦ e1 ⟧ , ⟦ e2 ⟧ ⟩ ∘ reflect X Y v                   ∎
+  sound-k X Y Z “ x ” v = vhom-sound X Z _
 ```
 
 The final soundness proof: normalizing an expression gives us the same
 morphism as naively interpreting the expression.
 
 ```agda
-  sound : ∀ X Y → (e : Expr X Y) → nf X Y e ≡ ⟦ e ⟧ₑ
+  sound : ∀ X Y → (e : “Hom” X Y) → nf X Y e ≡ ⟦ e ⟧
   sound X Y e = sound-k X X Y e vid ∙ elimr (vhom-sound X X id)
 ```
 
@@ -256,7 +269,7 @@ a macro, which is critical for performance.
 
 ```agda
   abstract
-    solve : ∀ X Y → (e1 e2 : Expr X Y) → nf X Y e1 ≡ nf X Y e2 → ⟦ e1 ⟧ₑ ≡ ⟦ e2 ⟧ₑ
+    solve : ∀ X Y → (e1 e2 : “Hom” X Y) → nf X Y e1 ≡ nf X Y e2 → ⟦ e1 ⟧ ≡ ⟦ e2 ⟧
     solve X Y e1 e2 p = sym (sound X Y e1) ·· p ·· sound X Y e2
 ```
 
@@ -266,255 +279,122 @@ As per usual, this is the hard part. Reflection is normally quite tricky, but th
 situation here is even harder than the category solver, as we need to reflect
 on objects as well as morphisms.
 
-We begin by defining a bunch of pattern synonyms for matching on various fields
-of precategories, as well as objects + morphisms that arise from the product structure.
-
-The situation here is extremely fiddly when it comes to implicit arguments, as
-we not only need to get the number correct, but also their multiplicity. Record
-projections always mark the records parameters as `hidden`{.Agda} and
-`quantity-0`{.Agda}, so we need to take care to do the same in these patterns.
-
 ```agda
-module Reflection where
-  private
-    pattern is-product-field X Y args =
-      _ hm∷ _ hm∷ _ hm∷ -- category args
-      X hm∷ Y hm∷       -- objects of product
-      _ hm∷             -- apex
-      _ hm∷ _ hm∷       -- projections
-      _ v∷              -- is-product record argument
-      args
-    pattern product-field X Y args =
-      _ hm∷ _ hm∷ _ hm∷ -- category args
-      X hm∷ Y hm∷       -- objects of product
-      _ v∷              -- product record argument
-      args
-    pattern category-field args = _ hm∷ _ hm∷ _ v∷ args
+module _ {o ℓ} {𝒞 : Precategory o ℓ} {prod : Binary-products 𝒞} where
+  open Cat.Reasoning 𝒞
+  open Binary-products prod
+  open NbE prod
 
-    pattern “⊗” X Y =
-      def (quote Product.apex) (product-field X Y [])
-    pattern “id” X =
-      def (quote Precategory.id) (category-field (X h∷ []))
-    pattern “∘” X Y Z f g =
-      def (quote Precategory._∘_) (category-field (X h∷ Y h∷ Z h∷ f v∷ g v∷ []))
-    pattern “π₁” X Y =
-      def (quote (Product.π₁)) (product-field X Y [])
-    pattern “π₂” X Y =
-      def (quote (Product.π₂)) (product-field X Y [])
-    pattern “⟨⟩” X Y Z f g =
-      def (quote (is-product.⟨_,_⟩)) (is-product-field Y Z (X h∷ f v∷ g v∷ []))
-```
+  record Product-ob (X : Ob) : Typeω where
+    field
+      “ob” : “Ob”
+      ob-repr : ⟦ “ob” ⟧ ≡ᵢ X
 
-Next, we define some helpers to make constructing things in the
-`NbE`{.Agda} module easier.
+  “ob” : (X : Ob) → ⦃ “X” : Product-ob X ⦄ → “Ob”
+  “ob” X ⦃ “X” ⦄ = Product-ob.“ob” “X”
 
-```agda
-    mk-nbe-con : Name → List (Arg Term) → Term
-    mk-nbe-con con-name args =
-      con con-name (unknown h∷ unknown h∷ unknown h∷ unknown h∷ args)
+  ob-repr : (X : Ob) → ⦃ “X” : Product-ob X ⦄ → ⟦ “ob” X ⟧ ≡ᵢ X
+  ob-repr X ⦃ “X” ⦄ = Product-ob.ob-repr “X”
 
-    mk-nbe-call : Term → Term → List (Arg Term) → List (Arg Term)
-    mk-nbe-call cat cart args = unknown h∷ unknown h∷ cat v∷ cart v∷ args
-```
+  record Product-hom
+    {X Y : Ob}
+    ⦃ “X” : Product-ob X ⦄ ⦃ “Y” : Product-ob Y ⦄
+    (f : Hom X Y) : Typeω where
+    field
+      “hom” : “Hom” (“ob” X) (“ob” Y)
 
-We also define some helpers for building quoted calls to
-`NbE.nf`{.Agda} and `NbE.solve`{.Agda}.
+  “hom”
+    : ∀ {X Y : Ob} → (f : Hom X Y)
+    → ⦃ “X” : Product-ob X ⦄ ⦃ “Y” : Product-ob Y ⦄
+    → ⦃ “f” : Product-hom f ⦄
+    → “Hom” (“ob” X) (“ob” Y)
+  “hom” f ⦃ “f” = “f” ⦄ = Product-hom.“hom” “f”
 
-```agda
-  “nf” : Term → Term → Term → Term → Term → Term
-  “nf” cat cart x y e =
-    def (quote NbE.nf) (mk-nbe-call cat cart (x v∷ y v∷ e v∷ []))
+  instance
+    Product-ob-Default
+      : ∀ {X} → Product-ob X
+    Product-ob-Default {X = X} .Product-ob.“ob” = NbE.“ X ”
+    Product-ob-Default .Product-ob.ob-repr = reflᵢ
+    {-# INCOHERENT Product-ob-Default #-}
 
-  “solve” : Term → Term → Term → Term → Term → Term → Term
-  “solve” cat cart x y lhs rhs =
-    def (quote NbE.solve) $
-      mk-nbe-call cat cart (x v∷ y v∷ lhs v∷ rhs v∷ “refl” v∷ [])
-```
+    Product-ob-⊗₀
+      : ∀ {X Y}
+      → ⦃ “X” : Product-ob X ⦄ ⦃ “Y” : Product-ob Y ⦄
+      → Product-ob (X ⊗₀ Y)
+    Product-ob-⊗₀ {X = X} {Y = Y} .Product-ob.“ob” =
+      “ob” X “⊗” “ob” Y
+    Product-ob-⊗₀ {X = X} {Y = Y} .Product-ob.ob-repr =
+      ap₂ᵢ _⊗₀_ (ob-repr X) (ob-repr Y)
 
-Now for the meat of the reflection. `build-obj-expr` will construct
-quoted terms of type `NbE.‶Ob‶`{.Agda} from quoted terms of type
-`Precategory.Ob`{.Agda}. `build-hom-expr` does the same thing, but for
-`NbE.Expr`{.Agda} and `Precategory.Hom`{.Agda}.
+    Product-hom-Default
+      : ∀ {X Y} {f : Hom X Y}
+      → ⦃ “X” : Product-ob X ⦄ ⦃ “Y” : Product-ob Y ⦄
+      → Product-hom f
+    Product-hom-Default {X = X} {Y = Y} {f = f} .Product-hom.“hom” =
+      “ substᵢ (λ X → Hom X ⟦ “ob” Y ⟧) (symᵢ (ob-repr X)) (substᵢ (λ Y → Hom X Y) (symᵢ (ob-repr Y)) f) ”
+    {-# INCOHERENT Product-hom-Default #-}
 
-Note that we apply all implicits to constructors in `build-hom-expr`.
-If we don't do this, Agda will get *very* upset.
+    Product-hom-id
+      : ∀ {X}
+      → ⦃ “X” : Product-ob X ⦄
+      → Product-hom (id {X})
+    Product-hom-id {X = X} .Product-hom.“hom” = “id” {X = “ob” X}
 
-```agda
-  build-obj-expr : Term → Term
-  build-obj-expr (“⊗” X Y)  =
-    con (quote NbE.‶Ob‶._‶⊗‶_) (build-obj-expr X v∷ build-obj-expr Y v∷ [])
-  build-obj-expr X =
-    con (quote NbE.‶Ob‶.‶_‶) (X v∷ [])
+    Product-hom-∘
+      : ∀ {X Y Z} {f : Hom Y Z} {g : Hom X Y}
+      → ⦃ “X” : Product-ob X ⦄ ⦃ “Y” : Product-ob Y ⦄ ⦃ “Z” : Product-ob Z ⦄
+      → ⦃ “f” : Product-hom f ⦄ ⦃ “g” : Product-hom g ⦄
+      → Product-hom (f ∘ g)
+    Product-hom-∘ {f = f} {g = g} .Product-hom.“hom” = “hom” f “∘” “hom” g
 
-  build-hom-expr : Term → Term
-  build-hom-expr (“id” X) =
-    mk-nbe-con (quote NbE.Expr.‶id‶) $
-      build-obj-expr X h∷ []
-  build-hom-expr (“∘” X Y Z f g) =
-    mk-nbe-con (quote NbE.Expr._‶∘‶_) $
-      build-obj-expr X h∷ build-obj-expr Y h∷ build-obj-expr Z h∷
-      build-hom-expr f v∷ build-hom-expr g v∷ []
-  build-hom-expr (“π₁” X Y) =
-    mk-nbe-con (quote NbE.Expr.‶π₁‶) $
-      build-obj-expr X h∷ build-obj-expr Y h∷ []
-  build-hom-expr (“π₂” X Y) =
-    mk-nbe-con (quote NbE.Expr.‶π₂‶) $
-      build-obj-expr X h∷ build-obj-expr Y h∷ []
-  build-hom-expr (“⟨⟩” X Y Z f g) =
-    mk-nbe-con (quote NbE.Expr.‶⟨_,_⟩‶) $
-    build-obj-expr X h∷ build-obj-expr Y h∷ build-obj-expr Z h∷
-    build-hom-expr f v∷ build-hom-expr g v∷ []
-  build-hom-expr f =
-    con (quote NbE.Expr.‶_‶) (f v∷ [])
-```
+    Product-hom-π₁
+      : ∀ {X Y}
+      → ⦃ “X” : Product-ob X ⦄ ⦃ “Y” : Product-ob Y ⦄
+      → Product-hom (π₁ {X} {Y})
+    Product-hom-π₁ .Product-hom.“hom” = “π₁”
 
-Now, for the solver interface. This follows the usual pattern: we create
-a list of names that we will pass to `withReduceDefs`{.Agda}, which will
-prevent Agda from normalizing away the things we want to reflect upon.
+    Product-hom-π₂
+      : ∀ {X Y}
+      → ⦃ “X” : Product-ob X ⦄ ⦃ “Y” : Product-ob Y ⦄
+      → Product-hom (π₂ {X} {Y})
+    Product-hom-π₂ .Product-hom.“hom” = “π₂”
 
-```agda
-  dont-reduce : List Name
-  dont-reduce =
-    quote Precategory.Hom ∷
-    quote Precategory.id ∷
-    quote Precategory._∘_ ∷
-    quote Product.apex ∷
-    quote Product.π₁ ∷
-    quote Product.π₂ ∷
-    quote is-product.⟨_,_⟩ ∷ []
-```
+    Product-hom-⟨⟩
+      : ∀ {X Y Z} {f : Hom X Y} {g : Hom X Z}
+      → ⦃ “X” : Product-ob X ⦄ ⦃ “Y” : Product-ob Y ⦄ ⦃ “Z” : Product-ob Z ⦄
+      → ⦃ “f” : Product-hom f ⦄ ⦃ “g” : Product-hom g ⦄
+      → Product-hom ⟨ f , g ⟩
+    Product-hom-⟨⟩ {f = f} {g = g} .Product-hom.“hom” = “⟨ “hom” f , “hom” g ⟩”
 
-We will need to recover the objects from some quoted hom to make the
-calls to the solver/normaliser.
+abstract
+  solve-product
+    : ∀ {o h} {C : Precategory o h} (prod : Binary-products C)
+    → (let open Precategory C) (let open NbE prod)
+    → ∀ {X Y}
+    → (f g : Hom X Y)
+    → ⦃ “X” : Product-ob X ⦄ ⦃ “Y” : Product-ob Y ⦄
+    → ⦃ “f” : Product-hom f ⦄ ⦃ “g” : Product-hom g ⦄
+    → nf (“ob” X) (“ob” Y) (“hom” f) ≡ nf (“ob” X) (“ob” Y) (“hom” g)
+    → ⟦ “hom” f ⟧ ≡ ⟦ “hom” g ⟧
+  solve-product prod {X = X} {Y = Y} f g p =
+    sym (NbE.sound prod (“ob” X) (“ob” Y) (“hom” f))
+    ·· p
+    ·· NbE.sound prod (“ob” X) (“ob” Y) (“hom” g)
 
-```agda
-  get-objects : Term → TC (Term × Term)
-  get-objects tm = ((infer-type tm >>= normalise) >>= wait-just-a-bit) >>= λ where
-    (def (quote Precategory.Hom) (category-field (x v∷ y v∷ []))) →
-      pure (x , y)
-    tp →
-      typeError $ strErr "Can't determine objects: " ∷ termErr tp ∷ []
-```
-
-We also make some debugging macros, which are very useful for when you
-want to examine the exact quoted representations of objects/homs.
-
-```agda
-  obj-repr-macro : ∀ {o ℓ} (𝒞 : Precategory o ℓ) (cartesian : ∀ X Y → Product 𝒞 X Y) → Term → Term → TC ⊤
-  obj-repr-macro cat cart hom hole =
-    withReconstructed true $
-    withNormalisation false $
-    withReduceDefs (false , dont-reduce) $ do
-    (x , y) ← get-objects hom
-    “x” ← build-obj-expr <$> normalise x
-    “y” ← build-obj-expr <$> normalise y
-    typeError $ strErr "Determined objects of " ∷ termErr hom ∷ strErr " to be\n  " ∷
-                termErr x ∷ strErr "\nAnd\n  " ∷
-                termErr y ∷ strErr "\nWith quoted representations\n  " ∷
-                termErr “x” ∷ strErr "\nAnd\n  " ∷
-                termErr “y” ∷ []
-
-  hom-repr-macro : ∀ {o ℓ} (𝒞 : Precategory o ℓ) (cartesian : ∀ X Y → Product 𝒞 X Y) → Term → Term → TC ⊤
-  hom-repr-macro cat cart hom hole =
-    withReconstructed true $
-    withNormalisation false $
-    withReduceDefs (false , dont-reduce) $ do
-    (x , y) ← get-objects hom
-    “x” ← build-obj-expr <$> normalise x
-    “y” ← build-obj-expr <$> normalise y
-    “hom” ← build-hom-expr <$> normalise hom
-    typeError $ strErr "The morphism\n  " ∷
-                termErr hom ∷ strErr "\nis represented by\n  " ∷
-                termErr “hom” ∷ strErr "\nwith objects\n  " ∷
-                termErr “x” ∷ strErr "\nAnd\n  " ∷
-                termErr “y” ∷ []
-```
-
-Now, the simplifier and solver reflection. This just puts together
-all of our bits from before.
-
-There is one subtlety here with regards to `withReconstructed`.
-We are reflecting on the record parameters to `Product`{.Agda} and
-`is-product`{.Agda} to determine the objects involved in things like `⟨_,_⟩`{.Agda},
-which Agda will mark as `unknown` by default. This will cause `build-obj-expr`{.Agda}
-to then fail when we have expressions involving nested `_⊗_`{.Agda}.
-Wrapping everything in `withReconstructed` causes Agda to fill in these arguments
-with their actual values, which then fixes the issue.
-
-```agda
-  simpl-macro : ∀ {o ℓ} (𝒞 : Precategory o ℓ) (cartesian : ∀ X Y → Product 𝒞 X Y) → Term → Term → TC ⊤
-  simpl-macro cat cart hom hole =
-    withReconstructed true $
-    withNormalisation false $
-    withReduceDefs (false , dont-reduce) $ do
-    (x , y) ← get-objects hom
-    “x” ← build-obj-expr <$> normalise x
-    “y” ← build-obj-expr <$> normalise y
-    “hom” ← build-hom-expr <$> normalise hom
-    “cat” ← quoteTC cat
-    “cart” ← quoteTC cart
-    unify hole (“nf” “cat” “cart” “x” “y” “hom”)
-
-  solve-macro : ∀ {o ℓ} (𝒞 : Precategory o ℓ) (cartesian : ∀ X Y → Product 𝒞 X Y) → Term → TC ⊤
-  solve-macro cat cart hole =
-    noConstraints $
-    withReconstructed true $
-    withNormalisation false $
-    withReduceDefs (false , dont-reduce) $ do
+macro
+  products!
+    : ∀ {o ℓ} {𝒞 : Precategory o ℓ}
+    → Binary-products 𝒞
+    → Term → TC ⊤
+  products! prod hole =
+    withNormalisation false $ do
     goal ← infer-type hole >>= reduce
     just (lhs , rhs) ← get-boundary goal
       where nothing → typeError $ strErr "Can't determine boundary: " ∷
                                   termErr goal ∷ []
-    (x , y) ← get-objects lhs
-    (x' , y') ← get-objects rhs
-    unify x x'
-    unify y y'
-    “x” ← build-obj-expr <$> normalise x
-    “y” ← build-obj-expr <$> normalise y
-    “lhs” ← build-hom-expr <$> normalise lhs
-    “rhs” ← build-hom-expr <$> normalise rhs
-    “cat” ← quoteTC cat
-    “cart” ← quoteTC cart
-    (unify hole (“solve” “cat” “cart” “x” “y” “lhs” “rhs”)) <|> do
-      vlhs ← normalise $ (“nf” “cat” “cart” “x” “y” “lhs”)
-      vrhs ← normalise $ (“nf” “cat” “cart” “x” “y” “rhs”)
-      typeError $ strErr "Could not equate the following expressions:\n  " ∷
-                   termErr lhs ∷
-                 strErr "\nAnd\n  " ∷
-                   termErr rhs ∷
-                 strErr "\nReflected expressions\n  " ∷
-                   termErr “lhs” ∷
-                 strErr "\nAnd\n  " ∷
-                   termErr “rhs” ∷
-                 strErr "\nComputed normal forms\n  " ∷
-                   termErr vlhs ∷
-                 strErr "\nAnd\n  " ∷
-                   termErr vrhs ∷ []
-```
+    “prod” ← quoteTC prod
+    unify hole (def (quote solve-product) (“prod” v∷ lhs v∷ rhs v∷ “refl” v∷ []))
 
-Finally, we define the user-facing interface as a series of macros.
-
-```agda
-macro
-  products-obj-repr! : ∀ {o ℓ}
-                       → (𝒞 : Precategory o ℓ) (cartesian : ∀ X Y → Product 𝒞 X Y)
-                       → Term → Term → TC ⊤
-  products-obj-repr! = Reflection.obj-repr-macro
-
-  products-repr! : ∀ {o ℓ}
-                   → (𝒞 : Precategory o ℓ) (cartesian : ∀ X Y → Product 𝒞 X Y)
-                   → Term → Term → TC ⊤
-  products-repr! = Reflection.hom-repr-macro
-
-  products-simpl! : ∀ {o ℓ}
-                    → (𝒞 : Precategory o ℓ) (cartesian : ∀ X Y → Product 𝒞 X Y)
-                    → Term → Term → TC ⊤
-  products-simpl! = Reflection.simpl-macro
-
-  products! : ∀ {o ℓ}
-              → (𝒞 : Precategory o ℓ) (cartesian : ∀ X Y → Product 𝒞 X Y)
-              → Term → TC ⊤
-  products! = Reflection.solve-macro
 ```
 
 # Demo
@@ -522,34 +402,33 @@ macro
 Wow, that was a lot of hard work! Let's marvel at the fruits of our labor.
 
 ```agda
-private module Tests {o ℓ} (𝒞 : Precategory o ℓ) (cartesian : ∀ X Y → Product 𝒞 X Y) where
+private module Tests {o ℓ} (𝒞 : Precategory o ℓ) (cartesian : Binary-products 𝒞) where
   open Precategory 𝒞
-  open Binary-products 𝒞 cartesian
-  open NbE 𝒞 cartesian
+  open Binary-products cartesian
 
   test-η : ∀ {X Y Z} → (f : Hom X (Y ⊗₀ Z))
            → f ≡ ⟨ π₁ ∘ f , π₂ ∘ f ⟩
-  test-η f = products! 𝒞 cartesian
+  test-η f = products! cartesian
 
   test-β₁ : ∀ {X Y Z} → (f : Hom X Y) → (g : Hom X Z)
             → π₁ ∘ ⟨ f , g ⟩ ≡ f
-  test-β₁ f g = products! 𝒞 cartesian
+  test-β₁ f g = products! cartesian
 
   test-β₂ : ∀ {X Y Z} → (f : Hom X Y) → (g : Hom X Z)
             → π₂ ∘ ⟨ f , g ⟩ ≡ g
-  test-β₂ f g = products! 𝒞 cartesian
+  test-β₂ f g = products! cartesian
 
   test-⟨⟩∘ : ∀ {W X Y Z} → (f : Hom X Y) → (g : Hom X Z) → (h : Hom W X)
              → ⟨ f ∘ h , g ∘ h ⟩ ≡ ⟨ f , g ⟩ ∘ h
-  test-⟨⟩∘ f g h = products! 𝒞 cartesian
+  test-⟨⟩∘ f g h = products! cartesian
 
   -- If you don't have 'withReconstructed' on, this test will fail!
   test-nested : ∀ {W X Y Z} → (f : Hom W X) → (g : Hom W Y) → (h : Hom W Z)
              → ⟨ ⟨ f , g ⟩ , h ⟩ ≡ ⟨ ⟨ f , g ⟩ , h ⟩
-  test-nested {W} {X} {Y} {Z} f g h = products! 𝒞 cartesian
+  test-nested {W} {X} {Y} {Z} f g h = products! cartesian
 
 
   test-big : ∀ {W X Y Z} → (f : Hom (W ⊗₀ X) (W ⊗₀ Y)) → (g : Hom (W ⊗₀ X) Z)
              → (π₁ ∘ ⟨ f , g ⟩) ∘ id ≡ id ∘ ⟨ π₁ , π₂ ⟩ ∘ f
-  test-big f g = products! 𝒞 cartesian
+  test-big f g = products! cartesian
 ```
