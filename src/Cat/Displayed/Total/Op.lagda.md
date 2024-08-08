@@ -1,7 +1,5 @@
 <!--
 ```agda
-open import 1Lab.Rewrite
-
 open import Cat.Functor.Equivalence.Path
 open import Cat.Functor.Equivalence
 open import Cat.Displayed.Fibre
@@ -68,12 +66,7 @@ total-op-involution {ℰ = ℰ} = path where
 
 <!--
 ```agda
-private
-  displayed-double-dual
-    : ∀ {o ℓ o' ℓ'} {ℬ : Precategory o ℓ} {ℰ : Displayed ℬ o' ℓ'}
-    → ((ℰ ^total-op) ^total-op) ≡rw ℰ
-  displayed-double-dual {ℰ = ℰ} = make-rewrite (total-op-involution {ℰ = ℰ})
-  {-# REWRITE displayed-double-dual #-}
+{-# REWRITE total-op-involution #-}
 ```
 -->
 
@@ -180,12 +173,6 @@ fibre-functor-total-op-total-op {ℰ = ℰ} {y = y} {F = F} i .F-∘ f g =
     i
     where open Precategory (Fibre ℰ y)
 
-private
-  fibre-functor-double-dual
-    : ∀ {o ℓ o' ℓ'} {ℬ : Precategory o ℓ} {ℰ : Displayed ℬ o' ℓ'} {x y}
-    → {F : Functor (Fibre ℰ x) (Fibre ℰ y)}
-    → fibre-functor-total-op (fibre-functor-total-op F) ≡rw F
-  fibre-functor-double-dual = make-rewrite fibre-functor-total-op-total-op
-{-# REWRITE fibre-functor-double-dual #-}
+{-# REWRITE fibre-functor-total-op-total-op #-}
 ```
 -->

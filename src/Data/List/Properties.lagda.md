@@ -160,7 +160,6 @@ map-++
 map-++ f [] ys = refl
 map-++ f (x ∷ xs) ys = ap (f x ∷_) (map-++ f xs ys)
 
-
 take-length : ∀ {ℓ} {A : Type ℓ} (xs : List A) → take (length xs) xs ≡ xs
 take-length [] = refl
 take-length (x ∷ xs) = ap (x ∷_) (take-length xs)

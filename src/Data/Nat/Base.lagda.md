@@ -6,8 +6,8 @@ open import 1Lab.HLevel
 open import 1Lab.Path
 open import 1Lab.Type
 
+open import Data.Bool.Base
 open import Data.Dec.Base
-open import Data.Bool
 ```
 -->
 
@@ -104,23 +104,28 @@ private module _ where private
 
 <!--
 ```agda
-is-equal→path : ∀ {x y} → (x == y) ≡ true → x ≡ y
-is-equal→path {zero}  {zero}  p = refl
-is-equal→path {zero}  {suc y} p = absurd (true≠false (sym p))
-is-equal→path {suc x} {zero}  p = absurd (true≠false (sym p))
-is-equal→path {suc x} {suc y} p = ap suc (is-equal→path p)
+abstract
+  from-prim-eq : ∀ {x y} → So (x == y) → x ≡ y
+  from-prim-eq {zero}  {zero}  p = refl
+  from-prim-eq {suc x} {suc y} p = ap suc (from-prim-eq p)
 
-is-not-equal→not-path : ∀ {x y} → (x == y) ≡ false → ¬ (x ≡ y)
-is-not-equal→not-path {zero}  {zero}  p q = absurd (true≠false p)
-is-not-equal→not-path {zero}  {suc y} p q = absurd (zero≠suc q)
-is-not-equal→not-path {suc x} {zero}  p q = absurd (zero≠suc (sym q))
-is-not-equal→not-path {suc x} {suc y} p q = is-not-equal→not-path p (suc-inj q)
+  from-prim-eq-refl : ∀ {x p} → from-prim-eq {x} {x} p ≡ refl
+  from-prim-eq-refl {zero} = refl
+  from-prim-eq-refl {suc x} = ap (ap suc) (from-prim-eq-refl {x})
+
+  {-# REWRITE from-prim-eq-refl #-}
+
+  to-prim-eq : ∀ {x y} → x ≡ y → So (x == y)
+  to-prim-eq {zero} {zero} p = oh
+  to-prim-eq {zero} {suc y} p = absurd (zero≠suc p)
+  to-prim-eq {suc x} {zero} p = absurd (suc≠zero p)
+  to-prim-eq {suc x} {suc y} p = to-prim-eq (suc-inj p)
 
 instance
   Discrete-Nat : Discrete Nat
-  Discrete-Nat {x} {y} with inspect (x == y)
-  ... | true  , p = yes (is-equal→path p)
-  ... | false , p = no  (is-not-equal→not-path p)
+  Discrete-Nat {x} {y} with oh? (x == y)
+  ... | yes p = yes (from-prim-eq p)
+  ... | no ¬p = no (¬p ∘ to-prim-eq)
 ```
 -->
 
@@ -181,7 +186,7 @@ _^_ : Nat → Nat → Nat
 x ^ zero = 1
 x ^ suc y = x * (x ^ y)
 
-infixr 8 _^_
+infixr 10 _^_
 ```
 
 ## Ordering
@@ -215,8 +220,7 @@ instance
   {-# INCOHERENT x≤x x≤sucy #-}
 
 Positive : Nat → Type
-Positive zero    = ⊥
-Positive (suc n) = ⊤
+Positive n = 1 ≤ n
 ```
 -->
 
@@ -226,7 +230,7 @@ re-using the definition of `_≤_`{.Agda}.
 ```agda
 _<_ : Nat → Nat → Type
 m < n = suc m ≤ n
-infix 3 _<_ _≤_
+infix 7 _<_ _≤_
 ```
 
 As an "ordering combinator", we can define the _maximum_ of two natural

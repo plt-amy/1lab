@@ -164,7 +164,7 @@ with projections.
   _⨾ˢ_ : ∀ {Γ Δ x y} (σ : Hom Γ Δ) → Hom[ σ ] x y → Hom (Γ ⨾ x) (Δ ⨾ y)
   σ ⨾ˢ f = F₁' f .to
 
-  infixl 5 _⨾ˢ_
+  infixl 8 _⨾ˢ_
 
   sub-proj : ∀ {Γ Δ x y} {σ : Hom Γ Δ} → (f : Hom[ σ ] x y) → πᶜ ∘ (σ ⨾ˢ f) ≡ σ ∘ πᶜ
   sub-proj f = sym $ F₁' f .commute

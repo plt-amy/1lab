@@ -50,7 +50,7 @@ postulate
 
 {-# BUILTIN PATHP PathP #-}
 
-infix 4 _≡_
+infix 7 _≡_
 
 _≡_ : ∀ {ℓ} {A : Type ℓ} → A → A → Type ℓ
 _≡_ {A = A} = PathP (λ i → A)
@@ -60,6 +60,8 @@ _≡_ {A = A} = PathP (λ i → A)
 
 <!--
 ```agda
+{-# BUILTIN REWRITE _≡_ #-}
+
 caseⁱ_of_ : ∀ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} (x : A) → ((y : A) → x ≡ y → B) → B
 caseⁱ x of f = f x (λ i → x)
 

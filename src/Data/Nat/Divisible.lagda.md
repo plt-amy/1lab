@@ -34,7 +34,7 @@ _∣_ : Nat → Nat → Type
 zero  ∣ y = y ≡ zero
 suc x ∣ y = fibre (_* suc x) y
 
-infix 5 _∣_
+infix 7 _∣_
 ```
 
 In this way, we break the pathological case of $0 | 0$ by _decreeing_ it
@@ -117,6 +117,14 @@ m∣sn→m≤sn : ∀ {x y} → x ∣ suc y → x ≤ suc y
 m∣sn→m≤sn {x} {y} p with ∣→fibre p
 ... | zero  , p = absurd (zero≠suc p)
 ... | suc k , p = difference→≤ (k * x) p
+
+m∣n→m≤n : ∀ {m n} .⦃ _ : Positive n ⦄ → m ∣ n → m ≤ n
+m∣n→m≤n {n = suc _} = m∣sn→m≤sn
+
+proper-divisor-< : ∀ {m n} .⦃ _ : Positive n ⦄ → m ≠ n → m ∣ n → m < n
+proper-divisor-< m≠n m∣n with ≤-strengthen (m∣n→m≤n m∣n)
+... | inl here  = absurd (m≠n here)
+... | inr there = there
 ```
 
 This will let us establish the antisymmetry we were looking for:
@@ -139,6 +147,9 @@ expect a number to divide its multiples. Fortunately, this is the case:
 
 ∣-*r : ∀ {x y} → x ∣ y * x
 ∣-*r {y = y} = fibre→∣ (y , refl)
+
+|-*l-pres : ∀ {n a b} → n ∣ b → n ∣ a * b
+|-*l-pres {n} {a} {b} p1 with (q , α) ← ∣→fibre p1 = fibre→∣ (a * q , *-associative a q n ∙ ap (a *_) α)
 ```
 
 If two numbers are multiples of $k$, then so is their sum.
@@ -147,6 +158,22 @@ If two numbers are multiples of $k$, then so is their sum.
 ∣-+ : ∀ {k n m} → k ∣ n → k ∣ m → k ∣ (n + m)
 ∣-+ {zero} {n} {m} p q = ap (_+ m) p ∙ q
 ∣-+ {suc k} (x , p) (y , q) = x + y , *-distrib-+r x y (suc k) ∙ ap₂ _+_ p q
+
+∣-+-cancel : ∀ {n a b} → n ∣ a → n ∣ a + b → n ∣ b
+∣-+-cancel {n} {a} {b} p1 p2 with (q , α) ← ∣→fibre p1 | (r , β) ← ∣→fibre p2 = fibre→∣
+  (r - q , monus-distribr r q n ∙ ap₂ _-_ β α ∙ ap ((a + b) -_) (sym (+-zeror a)) ∙ monus-cancell a b 0)
+
+∣-+-cancel' : ∀ {n a b} → n ∣ b → n ∣ a + b → n ∣ a
+∣-+-cancel' {n} {a} {b} p1 p2 = ∣-+-cancel {n} {b} {a} p1 (subst (n ∣_) (+-commutative a b) p2)
+```
+
+The only number that divides 1 is 1 itself:
+
+```agda
+∣-1 : ∀ {n} → n ∣ 1 → n ≡ 1
+∣-1 {0} p = sym p
+∣-1 {1} p = refl
+∣-1 {suc (suc n)} (k , p) = *-is-oner k (2 + n) p
 ```
 
 ## Even and odd numbers

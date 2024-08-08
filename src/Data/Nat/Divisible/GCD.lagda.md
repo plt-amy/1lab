@@ -8,6 +8,7 @@ open import Data.Nat.Properties
 open import Data.Nat.Divisible
 open import Data.Nat.DivMod
 open import Data.Nat.Order
+open import Data.Dec.Base
 open import Data.Nat.Base
 open import Data.Sum.Base
 ```
@@ -190,4 +191,44 @@ is-gcd-graphs-gcd : ∀ {m n d} → is-gcd m n d ≃ (gcd m n ≡ d)
 is-gcd-graphs-gcd {m = m} {n} {d} = prop-ext!
   (λ x → ap fst $ GCD-is-prop (gcd m n , Euclid.euclid m n .snd) (d , x))
   (λ p → subst (is-gcd m n) p (Euclid.euclid m n .snd))
+```
+
+## Euclid's lemma
+
+```agda
+|-*-coprime-cancel
+  : ∀ n a b .⦃ _ : Positive n ⦄ .⦃ _ : Positive a ⦄
+  → n ∣ a * b → is-gcd n a 1 → n ∣ b
+|-*-coprime-cancel n a b div coprime = done where
+  E : Nat → Prop lzero
+  E x = el! (0 < x × n ∣ x * b)
+
+  has : Σ[ x ∈ Nat ] ((x ∈ E) × (∀ y → (0 < y) × (n ∣ y * b) → x ≤ y))
+  has = ℕ-well-ordered {P = E} (λ _ → auto) (inc (a , recover auto , div))
+
+  instance
+    _ : Positive (has .fst)
+    _ = has .snd .fst .fst
+
+  step : ∀ x → x ∈ E → has .fst ∣ x
+  step x (xe , d) with divmod q r α β ← divide-pos x (has .fst) =
+    let
+      d' : n ∣ (q * has .fst * b + r * b)
+      d' = subst (n ∣_) (ap (_* b) (recover α) ∙ *-distrib-+r (q * has .fst) r b) d
+
+      d'' : n ∣ r * b
+      d'' = ∣-+-cancel {n} {q * has .fst * b} {r * b} (subst (n ∣_) (sym (*-associative q (has .fst) b)) (|-*l-pres {a = q} (has .snd .fst .snd))) d'
+    in case r ≡? 0 of λ where
+      (yes p) → fibre→∣ (q , sym (recover α ∙ ap (q * has .fst +_) p ∙ +-zeror (q * has .fst)))
+      (no ¬p) → absurd (<-irrefl
+        (≤-antisym (≤-trans ≤-ascend (recover β)) (has .snd .snd r (nonzero→positive ¬p , d'')))
+        (recover β))
+
+  almost : has .fst ≡ 1
+  almost = ∣-1 $ coprime .greatest {has .fst}
+    (step n (recover auto , ∣-*l))
+    (step a (recover auto , div))
+
+  done : n ∣ b
+  done = subst (n ∣_) (ap (_* b) almost ∙ *-onel b) (has .snd .fst .snd)
 ```

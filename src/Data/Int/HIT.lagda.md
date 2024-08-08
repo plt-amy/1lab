@@ -1,7 +1,6 @@
 <!--
 ```agda
 open import 1Lab.Prelude
-open import 1Lab.Rewrite
 
 open import Data.Nat.Solver
 open import Data.Dec
@@ -781,10 +780,9 @@ instance
   Discrete-Int : Discrete Int
   Discrete-Int = go _ _ where
     go₀ : (a b x y : Nat) → Dec (diff a b ≡ diff x y)
-    go₀ a b x y with inspect (a + y == b + x)
-    ... | true , p  = yes (same-difference (is-equal→path {a + y} {b + x} p))
-    ... | false , p = no λ q → is-not-equal→not-path
-      {a + y} {b + x} p (ℤ-Path.encode a b (diff x y) q)
+    go₀ a b x y with a + y ≡? b + x
+    ... | yes p  = yes (same-difference p)
+    ... | no ¬p = no λ ab → ¬p (ℤ-Path.encode a b (diff x y) ab)
 
     go₁ : (a b : Nat) (y : Int) → Dec (diff a b ≡ y)
     go₁ a b (diff x y) = go₀ a b x y

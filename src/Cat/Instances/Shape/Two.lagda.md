@@ -66,11 +66,11 @@ defined above.
 
     q : ∀ {x y} (f : x ≡ y) → _
     q {false} {false} p =
-      F .F₁ p           ≡⟨ ap (F .F₁) (Bool-is-set _ _ _ _) ⟩
+      F .F₁ p           ≡⟨ ap (F .F₁) prop! ⟩
       F .F₁ refl        ≡⟨ F .F-id ⟩
       id                ∎
     q {true} {true} p =
-      F .F₁ p           ≡⟨ ap (F .F₁) (Bool-is-set _ _ _ _) ⟩
+      F .F₁ p           ≡⟨ ap (F .F₁) prop! ⟩
       F .F₁ refl        ≡⟨ F .F-id ⟩
       id                ∎
     q {false} {true} p = absurd (true≠false (sym p))

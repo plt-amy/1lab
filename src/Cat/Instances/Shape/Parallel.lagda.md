@@ -39,9 +39,9 @@ parallel arrows between them. It is the shape of [[equaliser]] and
 
 <!--
 ```agda
-  precat .Hom-set false false a b p q i j = tt
-  precat .Hom-set false true  a b p q i j = Bool-is-set a b p q i j
-  precat .Hom-set true  true  a b p q i j = tt
+  precat .Hom-set false false = hlevel 2
+  precat .Hom-set false true  = hlevel 2
+  precat .Hom-set true  true  = hlevel 2
 
   precat .id {false} = tt
   precat .id {true} = tt

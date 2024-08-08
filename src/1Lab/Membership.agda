@@ -45,7 +45,7 @@ infix 30 _∉_
 ∫ₚ
   : ∀ {ℓ ℓ' ℓ''} {X : Type ℓ} {ℙX : Type ℓ'} ⦃ m : Membership X ℙX ℓ'' ⦄
   → ℙX → Type _
-∫ₚ {X = X} P = Σ[ x ∈ X ] (x ∈ P)
+∫ₚ {X = X} P = Σ[ x ∈ X ] x ∈ P
 
 -- Notation typeclass for _⊆_. We could always define
 --

@@ -53,7 +53,7 @@ module _ {o ℓ κ} {C : Precategory o ℓ} where
     open is-pullback
 
     pb-path
-      : ∀ {i} {x y : Σ[ x ∈ X.₀ i ] Σ[ y ∈ Y.₀ i ] (f.η i x ≡ g.η i y)}
+      : ∀ {i} {x y : Σ[ x ∈ X.₀ i ] Σ[ y ∈ Y.₀ i ] f.η i x ≡ g.η i y}
       → x .fst ≡ y .fst
       → x .snd .fst ≡ y .snd .fst
       → x ≡ y
@@ -65,7 +65,7 @@ module _ {o ℓ κ} {C : Precategory o ℓ} where
         i j
 
     pb : Pullback (PSh κ C) f g
-    pb .apex .F₀ i = el! (Σ[ x ∈ X.₀ i ] Σ[ y ∈ Y.₀ i ] (f.η i x ≡ g.η i y))
+    pb .apex .F₀ i = el! (Σ[ x ∈ X.₀ i ] Σ[ y ∈ Y.₀ i ] f.η i x ≡ g.η i y)
     pb .apex .F₁ {x} {y} h (a , b , p) = X.₁ h a , Y.₁ h b , path where abstract
       path : f.η y (X.₁ h a) ≡ g.η y (Y.₁ h b)
       path = happly (f.is-natural _ _ _) _

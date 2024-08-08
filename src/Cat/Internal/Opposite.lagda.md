@@ -1,7 +1,5 @@
 <!--
 ```agda
-open import 1Lab.Rewrite
-
 open import Cat.Prelude
 
 import Cat.Internal.Base
@@ -51,8 +49,8 @@ private
   op-ihom-involutive
     : ∀ {C₀ C₁ Γ} {src tgt : Hom C₁ C₀} {x y : Hom Γ C₀}
     → {f : Internal-hom src tgt x y}
-    → op-ihom (op-ihom f) ≡rw f
-  op-ihom-involutive = make-rewrite (Internal-hom-path refl)
+    → op-ihom (op-ihom f) ≡ f
+  op-ihom-involutive = Internal-hom-path refl
 {-# REWRITE op-ihom-involutive #-}
 ```
 -->

@@ -1044,7 +1044,7 @@ inhabitant!
 
 ```agda
 Singleton : ∀ {ℓ} {A : Type ℓ} → A → Type _
-Singleton x = Σ[ y ∈ _ ] (x ≡ y)
+Singleton x = Σ[ y ∈ _ ] x ≡ y
 ```
 
 We're given an inhabitant $y : A$ and a path $p : x \is y$. To identify
@@ -2378,5 +2378,8 @@ _$ₚ_ : ∀ {ℓ₁ ℓ₂} {A : Type ℓ₁} {B : A → Type ℓ₂} {f g : �
      → f ≡ g → ∀ x → f x ≡ g x
 (f $ₚ x) i = f i x
 {-# INLINE _$ₚ_ #-}
+
+_≠_ : ∀ {ℓ} {A : Type ℓ} → A → A → Type ℓ
+x ≠ y = ¬ x ≡ y
 ```
 -->

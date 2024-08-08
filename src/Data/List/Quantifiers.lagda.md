@@ -82,7 +82,7 @@ All-rec n e (p ∷ a) = e p (e p n)
 ∷-all-× : All P (x ∷ xs) → P x × All P xs
 ∷-all-× (px ∷ pxs) = px , pxs
 
-¬some-[] : ¬ (Some P [])
+¬some-[] : ¬ Some P []
 ¬some-[] ()
 
 ∷-some-⊎ : Some P (x ∷ xs) → P x ⊎ Some P xs
@@ -158,4 +158,21 @@ instance
 all-∈ : All P xs → x ∈ xs → P x
 all-∈ {P = P} (px ∷ pxs) (here p) = subst P (sym p) px
 all-∈ (px ∷ pxs) (there x∈xs) = all-∈ pxs x∈xs
+
+to-all : (∀ x → x ∈ xs → P x) → All P xs
+to-all {xs = []} p = []
+to-all {xs = x ∷ xs} p = p x (here refl) ∷ to-all (λ i w → p i (there w))
 ```
+
+<!--
+```agda
+instance
+  H-Level-All : ∀ {ℓ ℓ'} {A : Type ℓ} {P : A → Type ℓ'} {n} ⦃ _ : ∀ {x} → H-Level (P x) n ⦄ {xs} → H-Level (All P xs) n
+  H-Level-All {P = P} {xs = xs} = hlevel-instance
+    (retract→is-hlevel {A = ∀ x → x ∈ₗ xs → P x} _ to-all (λ a _ → all-∈ a) inv (hlevel _))
+    where
+      inv : ∀ {xs} → is-left-inverse (to-all {xs = xs} {P = P}) (λ a z → all-∈ a)
+      inv {xs} [] = refl
+      inv {x ∷ xs} (y ∷ ys) i = coe1→i (λ _ → P x) i y ∷ inv ys i
+```
+-->

@@ -24,7 +24,7 @@ composition operation.
 ∙⤮∙ : Precategory lzero lzero
 ∙⤮∙ .Precategory.Ob = ⊤
 ∙⤮∙ .Precategory.Hom _ _ = Bool
-∙⤮∙ .Precategory.Hom-set _ _ = Bool-is-set
+∙⤮∙ .Precategory.Hom-set _ _ = hlevel 2
 ∙⤮∙ .Precategory.id = false
 ∙⤮∙ .Precategory._∘_ = xor
 ∙⤮∙ .Precategory.idr f = xor-falser f

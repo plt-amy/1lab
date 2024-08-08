@@ -6,7 +6,6 @@ open import 1Lab.Path.IdentitySystem
 open import 1Lab.HLevel.Closure
 open import 1Lab.Type.Sigma
 open import 1Lab.Univalence
-open import 1Lab.Rewrite
 open import 1Lab.HLevel
 open import 1Lab.Equiv
 open import 1Lab.Path
@@ -114,13 +113,13 @@ opaque
   _≡ᵢ?_ : ∀ {ℓ} {A : Type ℓ} ⦃ _ : Discrete A ⦄ (x y : A) → Dec (x ≡ᵢ y)
   x ≡ᵢ? y = discrete-id (x ≡? y)
 
-  ≡ᵢ?-default : ∀ {ℓ} {A : Type ℓ} {x y : A} {d : Discrete A} → (_≡ᵢ?_ ⦃ d ⦄ x y) ≡rw discrete-id d
-  ≡ᵢ?-default = make-rewrite refl
+  ≡ᵢ?-default : ∀ {ℓ} {A : Type ℓ} {x y : A} {d : Discrete A} → (_≡ᵢ?_ ⦃ d ⦄ x y) ≡ discrete-id d
+  ≡ᵢ?-default = refl
 
-  ≡ᵢ?-yes : ∀ {ℓ} {A : Type ℓ} {x : A} {d : Discrete A} → (_≡ᵢ?_ ⦃ d ⦄ x x) ≡rw yes reflᵢ
-  ≡ᵢ?-yes {d = d} = make-rewrite (case d return (λ d → discrete-id d ≡ yes reflᵢ) of λ where
+  ≡ᵢ?-yes : ∀ {ℓ} {A : Type ℓ} {x : A} {d : Discrete A} → (_≡ᵢ?_ ⦃ d ⦄ x x) ≡ yes reflᵢ
+  ≡ᵢ?-yes {d = d} = case d return (λ d → discrete-id d ≡ yes reflᵢ) of λ where
     (yes a) → ap yes (is-set→is-setᵢ (Discrete→is-set d) _ _ _ _)
-    (no ¬a) → absurd (¬a refl))
+    (no ¬a) → absurd (¬a refl)
 
 {-# REWRITE ≡ᵢ?-default ≡ᵢ?-yes #-}
 

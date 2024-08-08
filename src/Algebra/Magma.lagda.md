@@ -138,7 +138,7 @@ set, this obviously defines a magma:
 ```agda
 private
   is-magma-imp : is-magma imp
-  is-magma-imp .has-is-set = Bool-is-set
+  is-magma-imp .has-is-set = hlevel 2
 ```
 
 We show it is not commutative or associative by giving counterexamples:

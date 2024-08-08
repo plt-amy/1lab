@@ -227,9 +227,9 @@ disjunctions, and implications.
 
 <!--
 ```agda
-infixr 6 _∧Ω_
-infixr 5 _∨Ω_
-infixr 4 _→Ω_
+infixr 10 _∧Ω_
+infixr 9 _∨Ω_
+infixr 8 _→Ω_
 ```
 -->
 

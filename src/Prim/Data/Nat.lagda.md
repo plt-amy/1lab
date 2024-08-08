@@ -31,8 +31,8 @@ are computed more efficiently when bound as `BUILTIN`s.
 
 ```agda
 infix  4 _==_ _<_
-infixl 6 _+_ _-_
-infixl 7 _*_
+infixl 8 _+_ _-_
+infixl 9 _*_
 
 _+_ : Nat → Nat → Nat
 zero  + m = m

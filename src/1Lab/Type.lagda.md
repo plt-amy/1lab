@@ -49,7 +49,7 @@ absurd ()
 
 ¬_ : ∀ {ℓ} → Type ℓ → Type ℓ
 ¬ A = A → ⊥
-infix 3 ¬_
+infix 6 ¬_
 ```
 
 :::{.definition #product-type}

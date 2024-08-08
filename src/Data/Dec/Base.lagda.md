@@ -47,9 +47,11 @@ Dec-rec = Dec-elim _
 ```agda
 recover : ∀ {ℓ} {A : Type ℓ} ⦃ d : Dec A ⦄ → .A → A
 recover ⦃ yes x ⦄ _ = x
-recover {A = A} ⦃ no ¬x ⦄ x = go (¬x x) where
-  go : .⊥ → A
-  go ()
+recover ⦃ no ¬x ⦄ x = absurd (¬x x)
+
+dec→dne : ∀ {ℓ} {A : Type ℓ} ⦃ d : Dec A ⦄ → ¬ ¬ A → A
+dec→dne ⦃ yes x ⦄ _   = x
+dec→dne ⦃ no ¬x ⦄ ¬¬x = absurd (¬¬x ¬x)
 ```
 -->
 

@@ -332,12 +332,7 @@ This is known as **Hedberg's theorem**.
 
 opaque
   Discrete→is-set : ∀ {ℓ} {A : Type ℓ} → Discrete A → is-set A
-  Discrete→is-set {A = A} dec =
-    identity-system→hlevel 1 (¬¬-stable-identity-system stable) λ x y f g →
-      funext λ h → absurd (g h)
-    where
-      stable : {x y : A} → ¬ ¬ x ≡ y → x ≡ y
-      stable {x = x} {y = y} ¬¬p with dec {x} {y}
-      ... | yes p = p
-      ... | no ¬p = absurd (¬¬p ¬p)
+  Discrete→is-set {A = A} dec = identity-system→hlevel 1
+    (¬¬-stable-identity-system (dec→dne ⦃ dec ⦄))
+    λ x y f g → funext λ h → absurd (g h)
 ```

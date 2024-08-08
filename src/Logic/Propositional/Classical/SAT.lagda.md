@@ -259,8 +259,8 @@ unit-propagate-sat x ϕs (ρ , ρ-sat) =
 unit-propagate-unsat
   : (x : Literal (suc Γ))
   → (ϕs : CNF (suc Γ))
-  → ¬ Σ[ ρ ∈ (Fin Γ → Bool) ]       (⟦ unit-propagate x ϕs ⟧ ρ ≡ true)
-  → ¬ Σ[ ρ ∈ (Fin (suc Γ) → Bool) ] ((⟦ ϕs ⟧ ρ ≡ true) × (⟦ x ⟧ ρ ≡ true))
+  → ¬ (Σ[ ρ ∈ (Fin Γ → Bool) ]       ⟦ unit-propagate x ϕs ⟧ ρ ≡ true)
+  → ¬ (Σ[ ρ ∈ (Fin (suc Γ) → Bool) ] ⟦ ϕs ⟧ ρ ≡ true × ⟦ x ⟧ ρ ≡ true)
 unit-propagate-unsat x ϕs ¬sat (ρ , ρ-sat , x-sat) = ¬sat $
     delete ρ (lit-var x)
   , sym (unit-propagate-complete x ϕs ρ x-sat) ∙ ρ-sat
@@ -274,7 +274,7 @@ representation of $\top$, while having an empty clause is the CNF
 representation of $\bot$.
 
 ```agda
-cnf-sat? : (ϕs : CNF Γ) → Dec (Σ[ ρ ∈ (Fin Γ → Bool) ] (⟦ ϕs ⟧ ρ ≡ true))
+cnf-sat? : (ϕs : CNF Γ) → Dec (Σ[ ρ ∈ (Fin Γ → Bool) ] ⟦ ϕs ⟧ ρ ≡ true)
 cnf-sat? {Γ = zero} []       = yes ((λ ()) , refl)
 cnf-sat? {Γ = zero} (ϕ ∷ ϕs) = no λ where
   (ρ , sat) → ¬empty-clause-sat ϕ ρ (and-reflect-true-l sat)

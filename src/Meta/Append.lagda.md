@@ -12,7 +12,7 @@ module Meta.Append where
 
 ```agda
 record Append {ℓ} (A : Type ℓ) : Type ℓ where
-  infixr 6 _<>_
+  infixr 8 _<>_
 
   field
     mempty : A

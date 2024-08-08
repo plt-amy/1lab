@@ -19,48 +19,12 @@ open is-iso
 
 ```agda
 module Data.Bool where
-
-open import Prim.Data.Bool public
 ```
 
 # The booleans
 
-The type of booleans is interesting in homotopy type theory because it
-is the simplest type where its automorphisms in `Type`{.Agda} are
-non-trivial. In particular, there are two: negation, and the identity.
-
-But first, true isn't false.
-
 ```agda
-true≠false : ¬ true ≡ false
-true≠false p = subst P p tt where
-  P : Bool → Type
-  P false = ⊥
-  P true = ⊤
-```
-
-It's worth noting how to prove two things are **not** equal. We write a
-predicate that distinguishes them by mapping one to `⊤`{.Agda}, and one
-to `⊥`{.Agda}. Then we can substitute under P along the claimed equality
-to get an element of `⊥`{.Agda} - a contradiction.
-
-## Basic algebraic properties
-
-The booleans form a [Boolean algebra][1], as one might already expect,
-given its name. The operations required to define such a structure are
-straightforward to define using pattern matching:
-
-```agda
-not : Bool → Bool
-not true = false
-not false = true
-
-and or : Bool → Bool → Bool
-and false y = false
-and true y = y
-
-or false y = y
-or true y = true
+open import Data.Bool.Base public
 ```
 
 Pattern matching on only the first argument might seem like a somewhat inpractical choice
@@ -273,44 +237,6 @@ imp-not-or false y = refl
 imp-not-or true y = refl
 ```
 
-## Discreteness
-
-Using pattern matching, and the fact that `true isn't false`{.Agda
-ident=true≠false}, one can write an algorithm to tell whether or not two
-booleans are the same:
-
-```agda
-instance
-  Discrete-Bool : Discrete Bool
-  Discrete-Bool {false} {false} = yes refl
-  Discrete-Bool {false} {true}  = no (λ p → true≠false (sym p))
-  Discrete-Bool {true}  {false} = no true≠false
-  Discrete-Bool {true}  {true}  = yes refl
-```
-
-```agda
-opaque
-  Bool-is-set : is-set Bool
-  Bool-is-set = Discrete→is-set Discrete-Bool
-
-instance
-  H-Level-Bool : ∀ {n} → H-Level Bool (2 + n)
-  H-Level-Bool = basic-instance 2 Bool-is-set
-```
-
-Furthermore, if we know we're not looking at true, then we must be
-looking at false, and vice-versa:
-
-```agda
-x≠true→x≡false : (x : Bool) → ¬ x ≡ true → x ≡ false
-x≠true→x≡false false p = refl
-x≠true→x≡false true p = absurd (p refl)
-
-x≠false→x≡true : (x : Bool) → ¬ x ≡ false → x ≡ true
-x≠false→x≡true false p = absurd (p refl)
-x≠false→x≡true true p = refl
-```
-
 ## The "not" equivalence
 
 The construction of `not`{.Agda} as an equivalence factors through
@@ -475,21 +401,3 @@ The other case is analogous.
 The last case is when the path quacks like `ua (not, _)` - in that case,
 we use the `notLemma`{.Agda} to show it _must_ be `ua (not, _)`, and the
 univalence axiom finishes the job.
-
-<!--
-```agda
-if : ∀ {ℓ} {A : Type ℓ} → A → A → Bool → A
-if x y false = y
-if x y true = x
-
-infix 0 if_then_else_
-
-if_then_else_ : ∀ {ℓ} {A : Type ℓ} → Bool → A → A → A
-if false then t else f = f
-if true then t else f = t
-
-Bool-elim : ∀ {ℓ} (A : Bool → Type ℓ) → A true → A false → ∀ x → A x
-Bool-elim A at af true = at
-Bool-elim A at af false = af
-```
--->

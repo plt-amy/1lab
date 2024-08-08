@@ -2,7 +2,6 @@
 ```agda
 open import 1Lab.Reflection.Induction
 open import 1Lab.Prelude
-open import 1Lab.Rewrite
 
 open import Algebra.Group.Cat.Base
 open import Algebra.Group.Homotopy
@@ -477,8 +476,8 @@ We can then obtain a nice interface for working with `winding`{.Agda}.
   opaque
     unfolding winding-is-equiv
 
-    winding-is-equiv-base : winding-is-equiv base ≡rw Equiv.inverse (G≃ΩB G) .snd
-    winding-is-equiv-base = make-rewrite prop!
+    winding-is-equiv-base : winding-is-equiv base ≡ Equiv.inverse (G≃ΩB G) .snd
+    winding-is-equiv-base = prop!
 
   {-# REWRITE winding-is-equiv-base #-}
 

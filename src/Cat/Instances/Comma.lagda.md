@@ -248,7 +248,7 @@ module _ {A : Precategory ao ah} {B : Precategory bo bh} where
   open ↓Obj
   open ↓Hom
 
-  infix 5 _↙_ _↘_
+  infix 8 _↙_ _↘_
   _↙_ : A.Ob → Functor B A → Precategory _ _
   X ↙ T = !Const X ↓ T
 

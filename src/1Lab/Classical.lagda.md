@@ -153,7 +153,7 @@ gives us a section $\Sigma P \to 2$.
 ```agda
 module _ (split : Surjections-split) (P : Ω) where
   section : ∥ ((x : Susp ∣ P ∣) → fibre 2→Σ x) ∥
-  section = split Bool-is-set (Susp-prop-is-set (hlevel 1)) 2→Σ 2→Σ-surjective
+  section = split (hlevel 2) (Susp-prop-is-set (hlevel 1)) 2→Σ 2→Σ-surjective
 ```
 
 But a section is always injective, and the booleans are [[discrete]], so we can

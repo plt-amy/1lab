@@ -1,6 +1,5 @@
 <!--
 ```agda
-open import 1Lab.Rewrite
 open import 1Lab.Path
 open import 1Lab.Type
 
@@ -119,6 +118,22 @@ numbers]. Since they're mostly simple inductive arguments written in
 
 *-suc-inj' : ∀ k x y → suc k * x ≡ suc k * y → x ≡ y
 *-suc-inj' k x y p = *-suc-inj k x y (*-commutative x (suc k) ·· p ·· *-commutative (suc k) y)
+
+*-injr : ∀ k x y .⦃ _ : Positive k ⦄ → x * k ≡ y * k → x ≡ y
+*-injr (suc k) x y p = *-suc-inj k x y p
+
+*-injl : ∀ k x y .⦃ _ : Positive k ⦄ → k * x ≡ k * y → x ≡ y
+*-injl (suc k) x y p = *-suc-inj' k x y p
+
+*-is-onel : ∀ x n → x * n ≡ 1 → x ≡ 1
+*-is-onel zero n p = p
+*-is-onel (suc zero) zero p = refl
+*-is-onel (suc (suc x)) zero p = absurd (zero≠suc (sym (*-zeror x) ∙ p))
+*-is-onel (suc x) (suc zero) p = ap suc (sym (*-oner x)) ∙ p
+*-is-onel (suc x) (suc (suc n)) p = absurd (zero≠suc (sym (suc-inj p)))
+
+*-is-oner : ∀ x n → x * n ≡ 1 → n ≡ 1
+*-is-oner x n p = *-is-onel n x (*-commutative n x ∙ p)
 ```
 
 ## Exponentiation
@@ -228,6 +243,10 @@ difference→≤ {x} {z} zero p            = subst (x ≤_) (sym (+-zeror x) ∙
 difference→≤ {zero}  {z}     (suc y) p = 0≤x
 difference→≤ {suc x} {zero}  (suc y) p = absurd (suc≠zero p)
 difference→≤ {suc x} {suc z} (suc y) p = s≤s (difference→≤ (suc y) (suc-inj p))
+
+nonzero→positive : ∀ {x} → x ≠ 0 → 0 < x
+nonzero→positive {zero} p = absurd (p refl)
+nonzero→positive {suc x} p = s≤s 0≤x
 ```
 
 ### Monus

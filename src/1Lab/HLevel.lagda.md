@@ -204,7 +204,7 @@ proof (used in the *definition* of path induction), we can demonstrate
 the application of path induction:
 
 ```agda
-_ : (a : A) → is-contr (Σ[ b ∈ A ] (b ≡ a))
+_ : (a : A) → is-contr (Σ[ b ∈ A ] b ≡ a)
 _ = λ t → record
   { centre = (t , refl)
   ; paths  = λ (s , p) → J' (λ s t p → (t , refl) ≡ (s , p)) (λ t → refl) p

@@ -337,7 +337,7 @@ category are product sets of connected components.
 
 ```agda
 Π₀-preserve-prods
-  : ∀ {C D : Precategory o h} → π₀ ʻ (C ×ᶜ D) ≡ π₀ ʻ C × π₀ ʻ D
+  : ∀ {C D : Precategory o h} → π₀ ʻ (C ×ᶜ D) ≡ (π₀ ʻ C × π₀ ʻ D)
 Π₀-preserve-prods {C = C} {D = D} = Iso→Path (f , isom) where
   open is-iso
 ```

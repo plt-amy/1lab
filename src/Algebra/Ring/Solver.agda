@@ -12,7 +12,6 @@ Horner normal forms are not sparse).
 open import 1Lab.Reflection.Variables
 open import 1Lab.Reflection.Solver
 open import 1Lab.Reflection
-open import 1Lab.Rewrite
 
 open import Algebra.Ring.Cat.Initial
 open import Algebra.Ring.Commutative

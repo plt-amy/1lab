@@ -6,6 +6,8 @@ open import 1Lab.HLevel
 open import 1Lab.Path
 open import 1Lab.Type hiding (Σ-syntax)
 
+open import Data.Bool.Base
+
 module 1Lab.Underlying where
 
 -- Notation class for types which have a chosen projection into a
@@ -53,6 +55,9 @@ instance
     → Underlying (Lift ℓ' A)
   Underlying-Lift ⦃ ua ⦄ .ℓ-underlying = ua .ℓ-underlying
   Underlying-Lift .⌞_⌟ x = ⌞ x .Lift.lower ⌟
+
+  Underlying-Bool : Underlying Bool
+  Underlying-Bool = record { ⌞_⌟ = So }
 
 -- The converse of to-is-true, generalised slightly. If P and Q are
 -- identical inhabitants of some type of structured types, and Q's

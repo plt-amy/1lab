@@ -1,7 +1,5 @@
 <!--
 ```agda
-open import 1Lab.Rewrite
-
 open import Cat.Diagram.Coend.Sets
 open import Cat.Functor.Naturality
 open import Cat.Instances.Product
@@ -283,8 +281,8 @@ $f(\day{h,x,y})$, in a way compatible with the relation above.
 ```agda
     factor-day
       : ∀ {i a b} {W : Cowedge (Day-diagram i)} {h : Hom i (a ⊗ b)} {x : X ʻ a} {y : Y ʻ b}
-      → factor W (day h x y) ≡rw W .ψ (a , b) (h , x , y)
-    factor-day = idrw
+      → factor W (day h x y) ≡ W .ψ (a , b) (h , x , y)
+    factor-day = refl
 
   {-# REWRITE factor-day #-}
 

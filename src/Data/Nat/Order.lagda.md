@@ -2,9 +2,12 @@
 ```agda
 open import 1Lab.Prelude
 
+open import Data.Bool.Base
 open import Data.Dec.Base
 open import Data.Nat.Base
 open import Data.Sum
+
+import Prim.Data.Nat as Prim
 ```
 -->
 
@@ -28,7 +31,19 @@ naturals automatically.
 ≤-refl : ∀ {x : Nat} → x ≤ x
 ≤-refl {zero}  = 0≤x
 ≤-refl {suc x} = s≤s ≤-refl
+```
 
+<!--
+```agda
+≤-refl' : ∀ {x y} → x ≡ y → x ≤ y
+≤-refl' {zero} {zero} p = 0≤x
+≤-refl' {zero} {suc y} p = absurd (zero≠suc p)
+≤-refl' {suc x} {zero} p = absurd (suc≠zero p)
+≤-refl' {suc x} {suc y} p = s≤s (≤-refl' (suc-inj p))
+```
+-->
+
+```agda
 ≤-trans : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
 ≤-trans 0≤x     0≤x     = 0≤x
 ≤-trans 0≤x     (s≤s q) = 0≤x
@@ -60,22 +75,73 @@ equivalence between $x \le y$ and $(1 + x) \le (1 + y)$.
 
 <!--
 ```agda
+private
+  from-prim-< : ∀ x y → ⌞ x Prim.< y ⌟ → x < y
+  from-prim-< zero (suc y) o = s≤s 0≤x
+  from-prim-< (suc x) (suc y) o = s≤s (from-prim-< x y o)
+
+  to-prim-< : ∀ x y → x < y → ⌞ x Prim.< y ⌟
+  to-prim-< zero (suc y) o = oh
+  to-prim-< (suc x) (suc y) o = to-prim-< x y (≤-peel o)
+
 instance
   H-Level-≤ : ∀ {n x y} → H-Level (x ≤ y) (suc n)
   H-Level-≤ = prop-instance ≤-is-prop
 ```
 -->
 
-Furthermore, `_≤_`{.Agda} is decidable, and weakly total:
+### Properties of the strict order
 
 ```agda
-≤-dec : (x y : Nat) → Dec (x ≤ y)
-≤-dec zero zero = yes 0≤x
-≤-dec zero (suc y) = yes 0≤x
-≤-dec (suc x) zero = no λ { () }
-≤-dec (suc x) (suc y) with ≤-dec x y
-... | yes x≤y = yes (s≤s x≤y)
-... | no ¬x≤y = no (λ { (s≤s x≤y) → ¬x≤y x≤y })
+<-≤-asym : ∀ {x y} → x < y → ¬ (y ≤ x)
+<-≤-asym {.(suc _)} {.(suc _)} (s≤s p) (s≤s q) = <-≤-asym p q
+
+<-asym : ∀ {x y} → x < y → ¬ (y < x)
+<-asym {.(suc _)} {.(suc _)} (s≤s p) (s≤s q) = <-asym p q
+
+<-not-equal : ∀ {x y} → x < y → x ≠ y
+<-not-equal {zero} (s≤s p) q = absurd (zero≠suc q)
+<-not-equal {suc x} (s≤s p) q = <-not-equal p (suc-inj q)
+
+<-irrefl : ∀ {x y} → x ≡ y → ¬ (x < y)
+<-irrefl {suc x} {zero}  p      q  = absurd (suc≠zero p)
+<-irrefl {zero}  {suc y} p      _  = absurd (zero≠suc p)
+<-irrefl {suc x} {suc y} p (s≤s q) = <-irrefl (suc-inj p) q
+
+<-weaken : ∀ {x y} → x < y → x ≤ y
+<-weaken {x} {suc y} p = ≤-sucr (≤-peel p)
+
+≤-strengthen : ∀ {x y} → x ≤ y → (x ≡ y) ⊎ (x < y)
+≤-strengthen {zero} {zero} 0≤x = inl refl
+≤-strengthen {zero} {suc y} 0≤x = inr (s≤s 0≤x)
+≤-strengthen {suc x} {suc y} (s≤s p) with ≤-strengthen p
+... | inl eq = inl (ap suc eq)
+... | inr le = inr (s≤s le)
+
+<-from-≤ : ∀ {x y} → x ≠ y → x ≤ y → x < y
+<-from-≤ x≠y x≤y with ≤-strengthen x≤y
+... | inl x=y = absurd (x≠y x=y)
+... | inr x<y = x<y
+```
+
+### Linearity
+
+Furthermore, `_≤_`{.Agda} is decidable, and weakly total:
+
+<!--
+```agda
+module _ where private
+```
+-->
+
+```agda
+  ≤-dec : (x y : Nat) → Dec (x ≤ y)
+  ≤-dec zero zero = yes 0≤x
+  ≤-dec zero (suc y) = yes 0≤x
+  ≤-dec (suc x) zero = no λ { () }
+  ≤-dec (suc x) (suc y) with ≤-dec x y
+  ... | yes x≤y = yes (s≤s x≤y)
+  ... | no ¬x≤y = no (λ { (s≤s x≤y) → ¬x≤y x≤y })
 
 ≤-is-weakly-total : ∀ x y → ¬ (x ≤ y) → y ≤ x
 ≤-is-weakly-total zero    zero    _    = 0≤x
@@ -87,6 +153,33 @@ Furthermore, `_≤_`{.Agda} is decidable, and weakly total:
 
 <!--
 ```agda
+<-from-not-≤ : ∀ x y → ¬ (x ≤ y) → y < x
+<-from-not-≤ zero    zero    x    = absurd (x 0≤x)
+<-from-not-≤ zero    (suc y) ¬0≤s = absurd (¬0≤s 0≤x)
+<-from-not-≤ (suc x) zero    _    = s≤s 0≤x
+<-from-not-≤ (suc x) (suc y) ¬s≤s = s≤s $
+  <-from-not-≤ x y λ z → ¬s≤s (s≤s z)
+
+≤-uncap : ∀ m n → m ≠ suc n → m ≤ suc n → m ≤ n
+≤-uncap m n p 0≤x = 0≤x
+≤-uncap (suc x) zero p (s≤s 0≤x) = absurd (p refl)
+≤-uncap (suc x) (suc n) p (s≤s q) = s≤s (≤-uncap x n (p ∘ ap suc) q)
+```
+-->
+
+<!--
+```agda
+≤-dec : (x y : Nat) → Dec (x ≤ y)
+≤-dec x y with x ≡? y
+... | yes x=y = yes (≤-refl' x=y)
+... | no ¬x=y with oh? (x Prim.< y)
+... | yes x<y = yes (<-weaken (from-prim-< x y x<y))
+... | no ¬x<y  = no not-both where
+  not-both : ¬ (x ≤ y)
+  not-both p with ≤-strengthen p
+  ... | inl x=y = ¬x=y x=y
+  ... | inr x<y = ¬x<y (to-prim-< x y x<y)
+
 instance
   Dec-≤ : ∀ {x y} → Dec (x ≤ y)
   Dec-≤ = ≤-dec _ _
@@ -118,28 +211,6 @@ their strict ordering:
   go (suc zero) zero p q    = absurd (q (s≤s 0≤x))
   go (suc (suc x)) zero p q = absurd (q (s≤s 0≤x))
   go (suc x) (suc y) p q    = ap suc (go x y (λ { a → p (s≤s a) }) λ { a → q (s≤s a) })
-```
-
-### Properties of the strict order
-
-```agda
-<-≤-asym : ∀ {x y} → x < y → ¬ (y ≤ x)
-<-≤-asym {.(suc _)} {.(suc _)} (s≤s p) (s≤s q) = <-≤-asym p q
-
-<-asym : ∀ {x y} → x < y → ¬ (y < x)
-<-asym {.(suc _)} {.(suc _)} (s≤s p) (s≤s q) = <-asym p q
-
-<-not-equal : ∀ {x y} → x < y → ¬ x ≡ y
-<-not-equal {zero} (s≤s p) q = absurd (zero≠suc q)
-<-not-equal {suc x} (s≤s p) q = <-not-equal p (suc-inj q)
-
-<-irrefl : ∀ {x y} → x ≡ y → ¬ (x < y)
-<-irrefl {suc x} {zero}  p      q  = absurd (suc≠zero p)
-<-irrefl {zero}  {suc y} p      _  = absurd (zero≠suc p)
-<-irrefl {suc x} {suc y} p (s≤s q) = <-irrefl (suc-inj p) q
-
-weaken-< : ∀ {x y} → x < y → x ≤ y
-weaken-< {x} {suc y} p = ≤-sucr (≤-peel p)
 ```
 
 ## Nat is a lattice

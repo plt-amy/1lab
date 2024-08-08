@@ -202,7 +202,7 @@ point with, rather than being a property of points.
 
 ```agda
 fibre : (A → B) → B → Type _
-fibre {A = A} f y = Σ[ x ∈ A ] (f x ≡ y)
+fibre {A = A} f y = Σ[ x ∈ A ] f x ≡ y
 ```
 :::
 
@@ -1094,13 +1094,13 @@ lift-inj p = ap Lift.lower p
 fibre-∘-≃
   : ∀ {ℓ ℓ' ℓ''} {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''}
   → {f : B → C} {g : A → B}
-  → ∀ c → fibre (f ∘ g) c ≃ (Σ[ (b , _) ∈ fibre f c ] (fibre g b))
+  → ∀ c → fibre (f ∘ g) c ≃ (Σ[ (b , _) ∈ fibre f c ] fibre g b)
 fibre-∘-≃ {f = f} {g = g} c = Iso→Equiv (fwd , iso bwd invl invr)
     where
-      fwd : fibre (f ∘ g) c → Σ[ (b , _) ∈ fibre f c ] (fibre g b)
+      fwd : fibre (f ∘ g) c → Σ[ (b , _) ∈ fibre f c ] fibre g b
       fwd (a , p) = ((g a) , p) , (a , refl)
 
-      bwd : Σ[ (b , _) ∈ fibre f c ] (fibre g b) → fibre (f ∘ g) c
+      bwd : Σ[ (b , _) ∈ fibre f c ] fibre g b → fibre (f ∘ g) c
       bwd ((b , p) , (a , q)) = a , ap f q ∙ p
 
       invl : ∀ x → fwd (bwd x) ≡ x

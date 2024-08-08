@@ -8,7 +8,6 @@ open import 1Lab.Extensionality
 open import 1Lab.HLevel.Closure
 open import 1Lab.Reflection
 open import 1Lab.Underlying
-open import 1Lab.Rewrite
 open import 1Lab.HLevel
 open import 1Lab.Equiv
 open import 1Lab.Path
@@ -198,10 +197,7 @@ C^op^op≡C {C = C} i = precat i where
 
 <!--
 ```agda
-private
-  precategory-double-dual : ∀ {o ℓ} {C : Precategory o ℓ} → C ^op ^op ≡rw C
-  precategory-double-dual = make-rewrite C^op^op≡C
-{-# REWRITE precategory-double-dual #-}
+{-# REWRITE C^op^op≡C #-}
 ```
 -->
 
@@ -312,12 +308,7 @@ F^op^op≡F {F = F} i .Functor.F₁ = F .Functor.F₁
 F^op^op≡F {F = F} i .Functor.F-id = F .Functor.F-id
 F^op^op≡F {F = F} i .Functor.F-∘ = F .Functor.F-∘
 
-private
-  functor-double-dual
-    : ∀ {o ℓ o' ℓ'} {C : Precategory o ℓ} {D : Precategory o' ℓ'} {F : Functor C D}
-    → Functor.op (Functor.op F) ≡rw F
-  functor-double-dual = make-rewrite F^op^op≡F
-{-# REWRITE functor-double-dual #-}
+{-# REWRITE F^op^op≡F #-}
 ```
 -->
 

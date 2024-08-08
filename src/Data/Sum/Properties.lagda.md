@@ -176,7 +176,7 @@ the coproduct of _disjoint_ propositions is a proposition:
 
 ```agda
 disjoint-⊎-is-prop
-  : is-prop A → is-prop B → ¬ A × B
+  : is-prop A → is-prop B → ¬ (A × B)
   → is-prop (A ⊎ B)
 disjoint-⊎-is-prop Ap Bp notab (inl x) (inl y) = ap inl (Ap x y)
 disjoint-⊎-is-prop Ap Bp notab (inl x) (inr y) = absurd (notab (x , y))

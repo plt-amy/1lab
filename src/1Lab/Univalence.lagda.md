@@ -95,7 +95,7 @@ open import 1Lab.Equiv.FromPath
 ```agda
 Glue : (A : Type ℓ)
      → {φ : I}
-     → (Te : Partial φ (Σ[ T ∈ Type ℓ' ] (T ≃ A)))
+     → (Te : Partial φ (Σ[ T ∈ Type ℓ' ] T ≃ A))
      → Type ℓ'
 ```
 

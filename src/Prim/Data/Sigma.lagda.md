@@ -36,7 +36,7 @@ infixr 4 _,_
 Σ-syntax X F = Σ X F
 
 syntax Σ-syntax X (λ x → F) = Σ[ x ∈ X ] F
-infix 5 Σ-syntax
+infix 4 Σ-syntax
 ```
 -->
 

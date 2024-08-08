@@ -3,6 +3,7 @@
 open import 1Lab.Prelude
 
 open import Data.Fin.Base
+open import Data.Nat.Base using (s≤s)
 open import Data.Dec
 open import Data.Sum
 
@@ -167,7 +168,7 @@ Fin≃ℕ< : ∀ {n} → Fin n ≃ ℕ< n
 Fin≃ℕ< {n} = to-ℕ< , is-iso→is-equiv (iso from-ℕ< (to-from-ℕ< {n}) from-to-ℕ<)
 
 avoid-injective
-  : ∀ {n} (i : Fin (suc n)) {j k : Fin (suc n)} {i≠j : ¬ i ≡ j} {i≠k : ¬ i ≡ k}
+  : ∀ {n} (i : Fin (suc n)) {j k : Fin (suc n)} {i≠j : i ≠ j} {i≠k : i ≠ k}
   → avoid i j i≠j ≡ avoid i k i≠k → j ≡ k
 avoid-injective fzero {fzero} {k} {i≠j} p = absurd (i≠j refl)
 avoid-injective fzero {fsuc j} {fzero} {i≠k = i≠k} p = absurd (i≠k refl)
@@ -191,8 +192,7 @@ Fin-suc-Π
 Fin-suc-Π = Iso→Equiv λ where
   .fst f → f fzero , (λ x → f (fsuc x))
 
-  .snd .is-iso.inv (z , f) fzero    → z
-  .snd .is-iso.inv (z , f) (fsuc x) → f x
+  .snd .is-iso.inv (z , s) → fin-cons z s
 
   .snd .is-iso.rinv x → refl
 
@@ -287,16 +287,47 @@ $\Pi$-types and $\Sigma$-types, respectively.
 
 ```agda
 instance
-  Fin-exhaustible
+  Dec-Fin-∀
     : ∀ {n ℓ} {A : Fin n → Type ℓ}
     → ⦃ ∀ {x} → Dec (A x) ⦄ → Dec (∀ x → A x)
-  Fin-exhaustible {n} ⦃ d ⦄ = Fin-Monoidal n λ _ → d
+  Dec-Fin-∀ {n} ⦃ d ⦄ = Fin-Monoidal n (λ _ → d)
 
-  Fin-omniscient
+  Dec-Fin-Σ
     : ∀ {n ℓ} {A : Fin n → Type ℓ}
     → ⦃ ∀ {x} → Dec (A x) ⦄ → Dec (Σ (Fin n) A)
-  Fin-omniscient {n} ⦃ d ⦄ = Fin-Alternative n λ _ → d
+  Dec-Fin-Σ {n} ⦃ d ⦄ = Fin-Alternative n λ _ → d
 ```
+
+```agda
+Fin-omniscience
+  : ∀ {n ℓ} (P : Fin n → Type ℓ) ⦃ _ : ∀ {x} → Dec (P x) ⦄
+  → (Σ[ j ∈ Fin n ] P j × ∀ k → P k → j ≤ k) ⊎ (∀ x → ¬ P x)
+Fin-omniscience {zero} P = inr λ ()
+Fin-omniscience {suc n} P with holds? (P 0)
+... | yes here = inl (0 , here , λ _ _ → 0≤x)
+... | no ¬here with Fin-omniscience (P ∘ fsuc)
+... | inl (ix , pix , least) = inl (fsuc ix , pix , fin-cons (λ here → absurd (¬here here)) λ i pi → Nat.s≤s (least i pi))
+... | inr nowhere = inr (fin-cons ¬here nowhere)
+```
+
+<!--
+```agda
+Fin-omniscience-neg
+  : ∀ {n ℓ} (P : Fin n → Type ℓ) ⦃ _ : ∀ {x} → Dec (P x) ⦄
+  → (∀ x → P x) ⊎ (Σ[ j ∈ Fin n ] ¬ P j × ∀ k → ¬ P k → j ≤ k)
+Fin-omniscience-neg P with Fin-omniscience (¬_ ∘ P)
+... | inr p = inl λ i → dec→dne (p i)
+... | inl (j , ¬pj , least) = inr (j , ¬pj , least)
+
+Fin-find
+  : ∀ {n ℓ} {P : Fin n → Type ℓ} ⦃ _ : ∀ {x} → Dec (P x) ⦄
+  → ¬ (∀ x → P x)
+  → Σ[ x ∈ Fin n ] ¬ P x × ∀ y → ¬ P y → x ≤ y
+Fin-find {P = P} ¬p with Fin-omniscience-neg P
+... | inl p = absurd (¬p p)
+... | inr p = p
+```
+-->
 
 ## Injections and surjections
 
@@ -347,7 +378,7 @@ avoid-insert
   → (ρ : Fin n → A)
   → (i : Fin (suc n)) (a : A)
   → (j : Fin (suc n))
-  → (i≠j : ¬ i ≡ j)
+  → (i≠j : i ≠ j)
   → (ρ [ i ≔ a ]) j ≡ ρ (avoid i j i≠j)
 avoid-insert {n = n} ρ fzero a fzero i≠j = absurd (i≠j refl)
 avoid-insert {n = suc n} ρ fzero a (fsuc j) i≠j = refl
