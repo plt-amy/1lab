@@ -1,6 +1,11 @@
 <!--
 ```agda
+open import Cat.Instances.StrictCat
+open import Cat.Instances.Graphs
+open import Cat.Functor.Adjoint
+open import Cat.Functor.Base
 open import Cat.Prelude
+open import Cat.Strict
 open import Cat.Gaunt
 
 import Cat.Reasoning
@@ -11,24 +16,9 @@ import Cat.Reasoning
 module Cat.Instances.Free where
 ```
 
-# Graphs and free categories {defines="graph free-category"}
+# Free categories {defines="free-category"}
 
-A **graph** (really, an $(o, \ell)$-graph^[and, even more pedantically,
-a directed multi-$(o, ℓ)$-graph]) is given by a set $V : \Sets_o$ of
-**vertices** and, for each pair of elements $x, y : V$, a set of
-**edges** $E(x, y) : \Sets_\ell$ from $x$ to $y$. That's it: a set $V$
-and a family of sets over $V \times V$. Really, for our purposes, graphs
-by themselves are not very interesting: their utility comes in
-constructing new _categories_.
-
-```agda
-record Graph o ℓ : Type (lsuc o ⊔ lsuc ℓ) where
-  field
-    vert : Set o
-    edge : ∣ vert ∣ → ∣ vert ∣ → Set ℓ
-```
-
-Given a graph $G$, we construct a [[strict category]] $\rm{Path}(G)$ in
+Given a [[graph]] $G$, we construct a [[strict category]] $\rm{Path}(G)$ in
 the following manner:
 
 - The objects of $\rm{Path}(G)$ are the vertices of $G$
@@ -43,9 +33,9 @@ module _ {o ℓ} (G : Graph o ℓ) where
 -->
 
 ```agda
-  data Path-in : ∣ G.vert ∣ → ∣ G.vert ∣ → Type (o ⊔ ℓ) where
+  data Path-in : G.Vertex → G.Vertex → Type (o ⊔ ℓ) where
     nil  : ∀ {a} → Path-in a a
-    cons : ∀ {a b c} → ∣ G.edge a b ∣ → Path-in b c → Path-in a c
+    cons : ∀ {a b c} → G.Edge a b → Path-in b c → Path-in a c
 ```
 
 That is: a path is either empty, in which case it starts and ends at
@@ -97,7 +87,7 @@ $\rm{Codep}_b(xs, ys)$ codes for a path $xs \equiv ys$ over $b$.
 
 ```agda
   path-codep
-    : ∀ (a : I → ∣ G.vert ∣) {c}
+    : ∀ (a : I → G.Vertex) {c}
     → Path-in (a i0) c
     → Path-in (a i1) c
     → Type (o ⊔ ℓ)
@@ -122,7 +112,7 @@ and a code for an identification between the tails.
 ```agda
   path-codep a {c} (cons {b = b} x xs) (cons {b = b'} y ys) =
     Σ[ bs ∈ (b ≡ b') ]
-      (PathP (λ i → ∣ G.edge (a i) (bs i) ∣) x y × path-codep (λ i → bs i) xs ys)
+      (PathP (λ i → G.Edge (a i) (bs i)) x y × path-codep (λ i → bs i) xs ys)
 ```
 
 By recursion on the paths and the code for an equality, we can show that
@@ -136,7 +126,7 @@ $G$ live in a set, so $p$ is reflexivity.
 
 ```agda
   path-encode
-    : ∀ (a : I → ∣ G.vert ∣) {c} xs ys
+    : ∀ (a : I → G.Vertex) {c} xs ys
     → path-codep a xs ys
     → PathP (λ i → Path-in (a i) c) xs ys
   path-encode a (cons x xs) (cons y ys) (p , q , r) i =
@@ -145,9 +135,9 @@ $G$ live in a set, so $p$ is reflexivity.
     lemma : ∀ {a b} (p : a ≡ b) (q : Path-in a b)
           → is-nil q → PathP (λ i → Path-in (p (~ i)) b) nil q
     lemma {a = a} p nil (lift lower) = to-pathp $
-      subst (λ e → Path-in e a) (sym p) nil ≡⟨ (λ i → subst (λ e → Path-in e a) (G.vert .is-tr a a (sym p) refl i) nil) ⟩
-      subst (λ e → Path-in e a) refl nil    ≡⟨ transport-refl _ ⟩
-      nil                                   ∎
+      is-set→subst-refl (λ e → Path-in e a)
+        G.Vertex-is-set
+        (sym p) nil
     lemma _ (cons x p) ()
 ```
 
@@ -159,17 +149,17 @@ inductive.
 
 ```agda
   path-codep-is-prop
-    : ∀ (a : I → ∣ G.vert ∣) {b}
+    : ∀ (a : I → G.Vertex) {b}
     → (p : Path-in (a i0) b) (q : Path-in (a i1) b) → is-prop (path-codep a p q)
   path-codep-is-prop a nil xs x y = is-nil-is-prop xs x y where
     is-nil-is-prop : ∀ {a b} (xs : Path-in a b) → is-prop (is-nil xs)
     is-nil-is-prop nil x y = refl
   path-codep-is-prop a (cons h t) (cons h' t') (p , q , r) (p' , q' , r') =
-    Σ-pathp (G.vert .is-tr _ _ _ _) $
+    Σ-pathp (G.Vertex-is-set _ _ p p') $
     Σ-pathp
-      (is-prop→pathp (λ i → PathP-is-hlevel' 1 (G.edge _ _ .is-tr) _ _) q q')
+      (is-prop→pathp (λ i → PathP-is-hlevel' 1 G.Edge-is-set _ _) q q')
       (is-prop→pathp
-        (λ i → path-codep-is-prop (λ j → G.vert .is-tr _ _ p p' i j) t t')
+        (λ i → path-codep-is-prop (λ j → G.Vertex-is-set _ _ p p' i j) t t')
         r r')
 ```
 
@@ -213,8 +203,15 @@ trivial. The composition operation, concatenation, is defined by
 recursion over the left-hand-side path. This is definitionally unital on
 the left.
 
+<!--
 ```agda
-  _++_ : ∀ {a b c} → Path-in a b → Path-in b c → Path-in a c
+module _ {o ℓ} {G : Graph o ℓ} where
+  private module G = Graph G
+```
+-->
+
+```agda
+  _++_ : ∀ {a b c} → Path-in G a b → Path-in G b c → Path-in G a c
   nil ++ ys = ys
   cons x xs ++ ys = cons x (xs ++ ys)
 ```
@@ -222,12 +219,12 @@ the left.
 Right unit and associativity are proven by induction.
 
 ```agda
-  ++-idr : ∀ {a b} (xs : Path-in a b) → xs ++ nil ≡ xs
+  ++-idr : ∀ {a b} (xs : Path-in G a b) → xs ++ nil ≡ xs
   ++-idr nil         = refl
   ++-idr (cons x xs) = ap (cons x) (++-idr xs)
 
   ++-assoc
-    : ∀ {a b c d} (p : Path-in a b) (q : Path-in b c) (r : Path-in c d)
+    : ∀ {a b c d} (p : Path-in G a b) (q : Path-in G b c) (r : Path-in G c d)
     → (p ++ q) ++ r ≡ p ++ (q ++ r)
   ++-assoc nil q r        = refl
   ++-assoc (cons x p) q r = ap (cons x) (++-assoc p q r)
@@ -237,12 +234,20 @@ And that's it! Note that we must compose paths backwards, since the type
 of the concatenation operation and the type of morphism composition are
 mismatched (they're reversed).
 
+<!--
+```agda
+module _ {o ℓ} (G : Graph o ℓ) where
+  private module G = Graph G
+```
+-->
+
+
 ```agda
   open Precategory
   Path-category : Precategory o (o ⊔ ℓ)
-  Path-category .Ob = ∣ G.vert ∣
-  Path-category .Hom = Path-in
-  Path-category .Hom-set _ _ = path-is-set
+  Path-category .Ob = G.Vertex
+  Path-category .Hom = Path-in G
+  Path-category .Hom-set _ _ = path-is-set G
   Path-category .id = nil
   Path-category ._∘_ xs ys = ys ++ xs
   Path-category .idr f = refl
@@ -268,9 +273,9 @@ make this induction acceptable.
     module Pc = Cat.Reasoning Path-category
 
     rem₁ : ∀ {x y} (j : Pc.Isomorphism x y) → Σ (x ≡ y) λ p → PathP (λ i → Pc.Isomorphism x (p i)) Pc.id-iso j
-    rem₁ {x = x} im = go im (im .Pc.to) refl (path-decode (im .Pc.invr)) where
-      go : ∀ {y} (im : Pc.Isomorphism x y) (j' : Path-in x y) → j' ≡ im .Pc.to
-         → path-codep (λ _ → x) (j' ++ im .Pc.from) nil
+    rem₁ {x = x} im = go im (im .Pc.to) refl (path-decode G (im .Pc.invr)) where
+      go : ∀ {y} (im : Pc.Isomorphism x y) (j' : Path-in G x y) → j' ≡ im .Pc.to
+         → path-codep G (λ _ → x) (j' ++ im .Pc.from) nil
          → Σ (x ≡ y) λ p → PathP (λ i → Pc.Isomorphism x (p i)) Pc.id-iso im
       go im nil p q = refl , ext p
 
@@ -284,3 +289,222 @@ make this induction acceptable.
     ; has-strict   = hlevel 2
     }
 ```
+
+## As a free construction
+
+We shall now prove that free categories are, indeed, free. Explicitly,
+we shall show that they are [[free objects]] relative to the
+[[underlying graph functor]].
+
+<!--
+```agda
+open Functor
+open Graph-hom
+
+private variable
+  o ℓ o' ℓ' : Level
+  G H K : Graph o ℓ
+
+open Graph
+```
+-->
+
+Let $G$ be a graph, $\cC$ a strict category, and $f : G \to \cC$
+a [[graph homomorphism]] between $G$ and the underying graph of
+$\cC$. We can extend $f$ to a function $fold(f)$ from paths in $G$ to morphisms
+in $\cC$ via induction.
+
+```agda
+module _ (C : Σ (Precategory o ℓ) is-strict) where
+  private
+    module C = Cat.Reasoning (C .fst)
+    ∣C∣ : Graph o ℓ
+    ∣C∣ = Strict-cats↪Graphs .F₀ C
+
+  path-fold
+    : (f : Graph-hom G ∣C∣)
+    → ∀ {x y} → Path-in G x y → C.Hom (f .vertex x) (f .vertex y)
+  path-fold f nil = C.id
+  path-fold f (cons e p) = path-fold f p C.∘ f .edge e
+```
+
+Moreover, $fold(f)$ is functorial; it definitionally takes the `nil`{.Agda}
+to `id`{.Agda}, and we can easily show that it preserves composites with
+some easy induction.
+
+```agda
+  path-fold-++
+    : {f : Graph-hom G ∣C∣}
+    → ∀ {x y z} (p : Path-in G x y) (q : Path-in G y z)
+    → path-fold f (p ++ q) ≡ path-fold f q C.∘ path-fold f p
+  path-fold-++ nil q = sym (C.idr _)
+  path-fold-++ (cons e p) q = C.pushl (path-fold-++ p q)
+
+  PathF
+    : Graph-hom G ∣C∣
+    → Functor (Path-category G) (C .fst)
+  PathF f .F₀ = f .vertex
+  PathF f .F₁ = path-fold f
+  PathF f .F-id = refl
+  PathF f .F-∘ p q = path-fold-++ q p
+```
+
+<!--
+```agda
+  path-fold-unique
+    : ∀ {f : Graph-hom G ∣C∣}
+    → (h : ∀ {x y} → Path-in G x y → C.Hom (f .vertex x) (f .vertex y))
+    → (∀ {x} → h (nil {a = x}) ≡ C.id)
+    → (∀ {x y z} (e : G .Edge x y) (p : Path-in G y z) → h (cons e p) ≡ (h p C.∘ f .edge e))
+    → ∀ {x y} (p : Path-in G x y) → h p ≡ path-fold f p
+  path-fold-unique h n c nil = n
+  path-fold-unique h n c (cons e p) =
+    c e p
+    ∙ ap₂ C._∘_ (path-fold-unique h n c p) refl
+
+  path-reduce
+    : ∀ {x y}
+    → Path-in (Strict-cats↪Graphs .F₀ C) x y
+    → C.Hom x y
+  path-reduce = path-fold Graphs.id
+
+```
+-->
+
+<!--
+```agda
+module _ {C : Precategory o ℓ} where
+  private module C = Cat.Reasoning C
+```
+-->
+
+We can also give a nice characterisation paths between functors
+out of path categories. In particular, we only need to check that
+two functors agree on edges; functoriality takes care of the rest.
+
+```agda
+  Path-category-functor-path
+    : {F F' : Functor (Path-category G) C}
+    → (p0 : ∀ x → F .F₀ x ≡ F' .F₀ x)
+    → (p1 : ∀ {x y} (e : G .Edge x y)
+            → PathP (λ i → C.Hom (p0 x i) (p0 y i))
+                (F .F₁ (cons e nil))
+                (F' .F₁ (cons e nil)))
+    → F ≡ F'
+```
+
+<details>
+<summary>The proof involves some cubical yoga, so we will hide it from
+the innocent reader.
+</summary>
+```agda
+  Path-category-functor-path {G = G} {F} {F'} p0 p1 =
+    Functor-path p0 p1-paths
+    where
+      p1-paths
+        : ∀ {x y}
+        → (p : Path-in G x y)
+        → PathP (λ i → C.Hom (p0 x i) (p0 y i)) (F .F₁ p) (F' .F₁ p)
+      p1-paths {x = x} nil i =
+        hcomp (∂ i) λ where
+          j (i = i0) → F .F-id (~ j)
+          j (i = i1) → F' .F-id (~ j)
+          j (j = i0) → C.id
+      p1-paths (cons e p) i =
+        hcomp (∂ i) λ where
+          j (i = i0) → F .F-∘ p (cons e nil) (~ j)
+          j (i = i1) → F' .F-∘ p (cons e nil) (~ j)
+          j (j = i0) → p1-paths p i C.∘ p1 e i
+```
+</details>
+
+With these lemmas out of the way, we can return to our orginal goal.
+The unit of the free object is given by the graph homomorphism that
+takes an edge to a singleton path, the universal morphism is given
+by our functor `PathF`{.Agda} from earlier, and the universal property
+follow directly from our hypotheses.
+
+```agda
+Free-category : ∀ (G : Graph ℓ ℓ) → Free-object Strict-cats↪Graphs G
+Free-category G .Free-object.free = Path-category G , hlevel 2
+Free-category G .Free-object.unit .vertex v = v
+Free-category G .Free-object.unit .edge e = cons e nil
+Free-category G .Free-object.fold {C} = PathF C
+Free-category G .Free-object.commute {Y = C} {f = f} =
+  Graph-hom-path (λ _ → refl) (λ _ → idl _)
+  where open Precategory (C .fst)
+Free-category G .Free-object.unique {Y = C} {f} F p =
+  Path-category-functor-path
+    (λ x i → p i .vertex x)
+    (λ e → to-pathp (from-pathp (λ i → p i .edge e) ∙ sym (idl _)))
+  where open Precategory (C .fst)
+```
+
+<!--
+```agda
+Free-categories : Functor (Graphs ℓ ℓ) (Strict-cats ℓ ℓ)
+Free-categories = free-objects→functor Free-category
+
+Free-categories⊣Underlying-graph : Free-categories {ℓ} ⊣ Strict-cats↪Graphs
+Free-categories⊣Underlying-graph = free-objects→left-adjoint Free-category
+```
+-->
+
+
+<!--
+```agda
+-- Defined by hand to be more universe polymorphic.
+path-map
+  : ∀ {x y}
+  → (f : Graph-hom G H)
+  → Path-in G x y
+  → Path-in H (f # x) (f # y)
+path-map f nil = nil
+path-map f (cons e p) = cons (f .edge e) (path-map f p)
+
+path-map-id
+  : ∀ {x y}
+  → (p : Path-in G x y)
+  → path-map Graphs.id p ≡ p
+path-map-id nil = refl
+path-map-id (cons e p) = ap (cons e) (path-map-id p)
+
+path-map-∘
+  : ∀ {x y}
+  → {f : Graph-hom H K} {g : Graph-hom G H}
+  → (p : Path-in G x y)
+  → path-map (f Graphs.∘ g) p ≡ path-map f (path-map g p)
+path-map-∘ nil = refl
+path-map-∘ (cons e p) = ap₂ cons refl (path-map-∘ p)
+
+module _
+  {C D : Σ (Precategory o ℓ) is-strict}
+  (F : Functor (C .fst) (D .fst))
+  where
+  private
+    module C = Cat.Reasoning (C .fst)
+    module D = Cat.Reasoning (D .fst)
+    module F = Functor F
+
+  path-reduce-natural
+    : ∀ {x y}
+    → (p : Path-in (Strict-cats↪Graphs .F₀ C) x y)
+    → path-reduce D (path-map (Strict-cats↪Graphs .F₁ F) p) ≡ F.₁ (path-reduce C p)
+  path-reduce-natural nil = sym F.F-id
+  path-reduce-natural (cons e p) = ap₂ D._∘_ (path-reduce-natural p) refl ∙ sym (F.F-∘ _ _)
+
+module _
+  {C : Σ (Precategory o ℓ) is-strict}
+  where
+  private
+    module C = Cat.Reasoning (C .fst)
+
+  path-reduce-map
+    : ∀ {x y}
+    → {f : Graph-hom G (Strict-cats↪Graphs .F₀ C)}
+    → (p : Path-in G x y)
+    → path-reduce C (path-map f p) ≡ path-fold C f p
+  path-reduce-map nil = refl
+  path-reduce-map (cons e p) = ap₂ C._∘_ (path-reduce-map p) refl
+```
+-->
