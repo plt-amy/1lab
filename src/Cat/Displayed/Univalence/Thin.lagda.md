@@ -32,7 +32,7 @@ open _≅[_]_
 ```
 -->
 
-# Thinly displayed structures
+# Thinly displayed structures {defines="thin-structure"}
 
 The HoTT Book's version of the structure identity principle can be seen
 as a very early example of [[displayed category]] theory. Their

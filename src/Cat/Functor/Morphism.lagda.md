@@ -193,7 +193,7 @@ formally dual to the case above, we will not dwell on it.
 
 </details>
 
-## Left and right adjoints
+## Left and right adjoints {defines="right-adjoints-preserve-monos"}
 
 If we are given an [[adjunction]] $L \dashv F$, then the right adjoint
 $F$ preserves monomorphisms. Fix a mono $a : \cC(A,B)$, and let $f, g :

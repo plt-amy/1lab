@@ -714,6 +714,72 @@ $\cD$, regardless of how many free objects there are. Put syntactically,
 a notion of "syntax without generators" does not imply that there is an
 object of 0 generators!
 
+
+<!--
+```agda
+module _ {o ℓ o' ℓ'} {C : Precategory o ℓ} {D : Precategory o' ℓ'} (F : Functor D C) where
+  private
+    module C = Cat.Reasoning C
+    module D = Cat.Reasoning D
+    module F = Func F
+
+  record Cofree-object (X : C.Ob) : Type (adj-level C D) where
+    field
+      {cofree} : D.Ob
+      counit   : C.Hom (F.₀ cofree) X
+
+      unfold : ∀ {A} (f : C.Hom (F.₀ A) X) → D.Hom A cofree
+      commute : ∀ {A} {f : C.Hom (F.₀ A) X} → counit C.∘ F.₁ (unfold f) ≡ f
+      unique
+        : ∀ {A} {f : C.Hom (F.₀ A) X} (g : D.Hom A cofree)
+        → counit C.∘ F.₁ g ≡ f
+        → g ≡ unfold f
+
+    abstract
+      unfold-natural
+        : ∀ {A B} (f : D.Hom A B) (g : C.Hom (F.₀ B) X)
+        → unfold (g C.∘ F.₁ f) ≡ unfold g D.∘ f
+      unfold-natural f g = sym (unique (unfold g D.∘ f) (F.popl commute))
+
+      unfold-counit : unfold counit ≡ D.id
+      unfold-counit = sym (unique D.id (C.elimr F.F-id))
+
+
+module _ {F : Functor D C} where
+  private
+    module C = Cat.Reasoning C
+    module D = Cat.Reasoning D
+    module F = Func F
+
+  module _ (cofree-objects : ∀ X → Cofree-object F X) where
+    private module U {X} where open Cofree-object (cofree-objects X) public
+    open Functor
+    open _=>_
+    open _⊣_
+
+    cofree-objects→functor : Functor C D
+    cofree-objects→functor .F₀ X = U.cofree {X}
+    cofree-objects→functor .F₁ f = U.unfold (f C.∘ U.counit)
+    cofree-objects→functor .F-id = ap U.unfold (C.idl _) ∙ U.unfold-counit
+    cofree-objects→functor .F-∘ f g = ap U.unfold (C.extendr (sym U.commute)) ∙ U.unfold-natural _ _
+
+    cofree-objects→right-adjoint : F ⊣ cofree-objects→functor
+    cofree-objects→right-adjoint .unit .η X = U.unfold C.id
+    cofree-objects→right-adjoint .unit .is-natural X Y f =
+      sym (U.unfold-natural _ _)
+      ∙ ap U.unfold (C.idl _ ∙ C.insertr U.commute)
+      ∙ U.unfold-natural _ _
+    cofree-objects→right-adjoint .counit .η X = U.counit
+    cofree-objects→right-adjoint .counit .is-natural X Y f = U.commute
+    cofree-objects→right-adjoint .zig = U.commute
+    cofree-objects→right-adjoint .zag =
+      sym (U.unfold-natural _ _)
+      ∙ ap U.unfold (C.cancelr U.commute)
+      ∙ U.unfold-counit
+
+```
+-->
+
 ## Induced adjunctions
 
 Any adjunction $L \dashv R$ induces, in a very boring way, an *opposite* adjunction
