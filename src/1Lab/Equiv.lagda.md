@@ -1076,6 +1076,8 @@ instructive exercise to work these out for yourself!</summary>
 ```agda
 _ : ∘-closed is-equiv
 _ = ∘-is-equiv
+
+private module _ where private
 ```
 -->
 
@@ -1085,18 +1087,62 @@ Specialising these, any left- or right- inverse of an equivalence must
 be homotopic to the specified one, so that *it too* is an equivalence.
 
 ```agda
+  left-inverse→equiv
+    : {f : A → B} {g : B → A}
+    → is-left-inverse g f → is-equiv f → is-equiv g
+  left-inverse→equiv linv ef = equiv-cancelr ef
+    (subst is-equiv (sym (funext linv)) id-equiv)
+
+  right-inverse→equiv
+    : {f : A → B} {g : B → A}
+    → is-right-inverse g f → is-equiv f → is-equiv g
+  right-inverse→equiv rinv ef = equiv-cancell ef
+    (subst is-equiv (sym (funext rinv)) id-equiv)
+```
+
+<!--
+```agda
+-- The inverse maps produces by the previous proofs have transports
+-- introduced via the 'subst', so we provide specialized forms that
+-- do not involve transports.
+
+subst-is-equiv
+  : ∀ {f g : A → B}
+  → f ≡ g
+  → is-equiv f
+  → is-equiv g
+{-# INLINE subst-is-equiv #-}
+subst-is-equiv {f = f} {g = g} p f-eqv = record
+  { is-eqv = λ b → contr (f.from b , happly (sym p) (f.from b) ∙ f.ε b) λ fib i →
+    comp (λ j → fibre (p (j ∨ i)) b) (∂ i) λ where
+      j (i = i0) → f.from b , ∙-filler' (happly (sym p) (f.from b)) (f.ε b) j
+      j (i = i1) → fib
+      j (j = i0) → fibre-line b fib i
+  }
+  where
+    module f = Equiv (_ , f-eqv)
+
+    fibre-line
+      : ∀ b (fib : fibre g b)
+      → PathP (λ i → fibre (p i) b) (f-eqv .is-eqv b .centre) fib
+    fibre-line b fib i = comp (λ j → fibre (p (i ∧ j)) b) (∂ i) λ where
+      j (i = i0) → f-eqv .is-eqv b .centre
+      j (i = i1) → coe1→i (λ i → fibre (p i) b) j fib
+      j (j = i0) → f-eqv .is-eqv b .paths (coe1→0 (λ i → fibre (p i) b) fib) i
+
 left-inverse→equiv
   : {f : A → B} {g : B → A}
   → is-left-inverse g f → is-equiv f → is-equiv g
-left-inverse→equiv linv ef = equiv-cancelr ef
-  (subst is-equiv (sym (funext linv)) id-equiv)
+left-inverse→equiv linv ef =
+  equiv-cancelr ef (subst-is-equiv (funext (λ x → sym (linv x))) id-equiv)
 
 right-inverse→equiv
   : {f : A → B} {g : B → A}
   → is-right-inverse g f → is-equiv f → is-equiv g
-right-inverse→equiv rinv ef = equiv-cancell ef
-  (subst is-equiv (sym (funext rinv)) id-equiv)
+right-inverse→equiv rinv eg =
+  equiv-cancell eg (subst-is-equiv (funext (λ x → sym (rinv x))) id-equiv)
 ```
+-->
 
 ### Equivalence reasoning
 
