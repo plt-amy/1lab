@@ -1291,6 +1291,15 @@ is-equiv-join : (f : A → B) → (B → is-equiv f) → is-equiv f
 {-# INLINE is-equiv-join #-}
 is-equiv-join f fe = record { is-eqv = λ y → fe y .is-eqv y }
 
+Subtype-proj-is-equiv
+  : ∀ {ℓa} {A : Type ℓa} {B : A → Type ℓ}
+  → (∀ x → is-prop (B x))
+  → (∀ x → B x)
+  → is-equiv {A = Σ A B} fst
+Subtype-proj-is-equiv B-prop Bx .is-eqv a .centre = (a , Bx a) , refl
+Subtype-proj-is-equiv B-prop Bx .is-eqv a .paths ((a' , b') , p) i .fst = p (~ i) , is-prop→pathp (λ i → B-prop (p (~ i))) (Bx a) b' i
+Subtype-proj-is-equiv B-prop Bx .is-eqv a .paths ((a' , b') , p) i .snd j = p (~ i ∨ j)
+
 module _ {ℓ} {A : Type ℓ} {x y : A} {p q : x ≡ y} where
   ∨-square≃ : (p ≡ q) ≃ Square p q refl refl
   ∨-square≃ .fst = ∨-square
