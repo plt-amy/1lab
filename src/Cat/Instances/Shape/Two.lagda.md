@@ -2,6 +2,7 @@
 ```agda
 open import Cat.Instances.Discrete
 open import Cat.Functor.Base
+open import Cat.Groupoid
 open import Cat.Prelude
 
 open import Data.Bool
@@ -66,3 +67,10 @@ defined above.
     q {true}  reflᵢ = F .F-id
     q {false} reflᵢ = F .F-id
 ```
+
+<!--
+```agda
+2-object-category-is-univalent-groupoid : is-univalent-groupoid 2-object-category
+2-object-category-is-univalent-groupoid = Id-identity-system
+```
+-->

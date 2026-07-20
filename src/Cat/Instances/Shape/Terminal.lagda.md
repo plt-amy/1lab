@@ -5,6 +5,7 @@ open import 1Lab.Prelude
 open import Cat.Functor.Naturality
 open import Cat.Functor.Compose
 open import Cat.Functor.Base
+open import Cat.Univalent
 open import Cat.Groupoid
 open import Cat.Morphism
 open import Cat.Base
@@ -41,12 +42,23 @@ trivial morphisms.
 ```
 
 The only morphism in the terminal category is the identity, so the
-terminal category is a [[pregroupoid]].
+terminal category is a [[univalent groupoid]].
 
+```agda
+⊤Cat-is-univalent-groupoid : is-univalent-groupoid ⊤Cat
+⊤Cat-is-univalent-groupoid = set-identity-system (λ _ _ → hlevel 1) (λ _ → refl)
+```
+
+<!--
 ```agda
 ⊤Cat-is-pregroupoid : is-pregroupoid ⊤Cat
 ⊤Cat-is-pregroupoid _ = id-invertible ⊤Cat
+
+⊤Cat-is-category : is-category ⊤Cat
+⊤Cat-is-category .to-path _ = refl
+⊤Cat-is-category .to-path-over _ = ≅-path ⊤Cat refl
 ```
+-->
 
 <!--
 ```agda
