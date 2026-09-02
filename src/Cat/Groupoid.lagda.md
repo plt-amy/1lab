@@ -46,8 +46,8 @@ module is-pregroupoid {o ℓ} (C : Precategory o ℓ) (gpd : is-pregroupoid C) w
 ```
 
 First, recall that being invertible is a [[property]] of morphisms.
-This means that the first projection `Σ[ f ∈ Hom x y ] is-invertible f`
-out of must be an equivalence, as all of the fibres are prop-valued
+This means that the first projection  `Σ[ f ∈ Hom x y ] is-invertible f → Hom x y`
+must be an equivalence, as all of the fibres are prop-valued
 and inhabited. Moreover, the type of isomorphisms $x \iso y$ is equivalent
 to the above sigma type, so 2-out-of-3 for equivalences gives us our desired
 result.
@@ -87,7 +87,8 @@ is-univalent-groupoid C = is-identity-system Hom λ x → id {x}
   where open Precategory C
 ```
 
-As the name suggests, every univalent groupoid is both [[univalent category]] and aunivalent-categoryun pregroupoid.
+As the name suggests, every univalent groupoid is both a [[univalent 
+category]] and a pregroupoid.
 
 ```agda
 module is-univalent-groupoid {o ℓ} (C : Precategory o ℓ) (C-gpd : is-univalent-groupoid C) where
@@ -98,7 +99,7 @@ module is-univalent-groupoid {o ℓ} (C : Precategory o ℓ) (C-gpd : is-univale
 ```
 
 We shall start by showing that $\cC$ is a pregroupoid. Let
-$f : \cC(X,Y)$ be a morphism of $\cC$: our goal is to show
+$f : \cC(x,y)$ be a morphism of $\cC$: our goal is to show
 that it is invertible. However, $\cC(x,y)$ is an identity
 system, so we can contract $f$ down to $\id$, which is obviously
 invertible!
