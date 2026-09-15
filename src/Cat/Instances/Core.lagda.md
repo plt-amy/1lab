@@ -47,15 +47,40 @@ private module Core {o ℓ} (C : Precategory o ℓ) = Cat.Reasoning (Core C)
 ```
 -->
 
+<!--
 ```agda
-Core-is-groupoid : ∀ {o ℓ} {C : Precategory o ℓ} → is-pregroupoid (Core C)
-Core-is-groupoid {C = C} f =
-  Core.make-invertible _ (wide f-inv.inv ((f .witness) C.invertible⁻¹))
-    (Wide-hom-path f-inv.invl)
-    (Wide-hom-path f-inv.invr)
-  where
+module _ {o ℓ} {C : Precategory o ℓ} where
+  private
     module C = Cat.Reasoning C
-    module f-inv = C.is-invertible (f .witness)
+```
+-->
+
+```agda
+  Core-is-groupoid : is-pregroupoid (Core C)
+  Core-is-groupoid f =
+    Core.make-invertible _ (wide f-inv.inv ((f .witness) C.invertible⁻¹))
+      (Wide-hom-path f-inv.invl)
+      (Wide-hom-path f-inv.invr)
+    where
+      module f-inv = C.is-invertible (f .witness)
+```
+
+Note that isomorphisms in $\cC$ are equivalent to morphisms in the core
+of $\cC$. This means that if $\cC$ is [[univalent|univalent-category]],
+then we can transfer the associated identity system on isomorphisms to
+an identity system on morphisms of the core, and thus the core
+must be a [[univalent groupoid]].
+
+```agda
+  iso≃Core-hom : ∀ {x y} → (x C.≅ y) ≃ Core.Hom C x y
+  iso≃Core-hom {x} {y} =
+    x C.≅ y                              ≃⟨ C.iso≃is-invertible ⟩
+    Σ[ f ∈ C.Hom x y ] C.is-invertible f ≃˘⟨ Wide-hom≃witness ⟩
+    Core.Hom C x y                       ≃∎
+
+  Core-is-univalent-groupoid : is-category C → is-univalent-groupoid (Core C)
+  Core-is-univalent-groupoid C-cat =
+    transfer-identity-system C-cat (λ _ _ → iso≃Core-hom) λ _ → ext refl
 ```
 
 We have mentioned that the core is the _maximal_ sub-groupoid of $\cC$:

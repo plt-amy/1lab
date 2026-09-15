@@ -473,3 +473,19 @@ opaque
     (¬¬-stable-identity-system dec→dne)
     λ x y f g → funext λ h → absurd (g h)
 ```
+
+<!--
+```agda
+×-identity-system
+  : ∀ {ℓa ℓb ℓr ℓs} {A : Type ℓa} {B : Type ℓb}
+  → {R : A → A → Type ℓr} {S : B → B → Type ℓs}
+  → {r : ∀ a → R a a} {s : ∀ b → S b b}
+  → is-identity-system R r
+  → is-identity-system S s
+  → is-identity-system
+      (λ ab ab' → R (ab .fst) (ab' .fst) × S (ab .snd) (ab' .snd))
+      (λ ab → r (ab .fst) , s (snd ab))
+×-identity-system R-ids S-ids .to-path (r' , s') = R-ids .to-path r' ,ₚ S-ids .to-path s'
+×-identity-system R-ids S-ids .to-path-over (r' , s') = R-ids .to-path-over r' ,ₚ S-ids .to-path-over s'
+```
+-->

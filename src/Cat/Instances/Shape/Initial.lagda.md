@@ -2,6 +2,7 @@
 ```agda
 open import 1Lab.Prelude
 
+open import Cat.Groupoid
 open import Cat.Base
 ```
 -->
@@ -44,4 +45,11 @@ module _ {o h} {A : Precategory o h} where
   ¡nt : ∀ {F G : Functor ⊥Cat A} → F => G
   ¡nt ._=>_.η ()
   ¡nt ._=>_.is-natural ()
+```
+
+The initial category is a [[univalent groupoid]].
+
+```agda
+⊥Cat-is-univalent-groupoid : is-univalent-groupoid ⊥Cat
+⊥Cat-is-univalent-groupoid = set-identity-system absurd absurd
 ```

@@ -76,6 +76,9 @@ Disc-is-category .to-path-over {a = a} is with is .to in w
 
 Disc-is-groupoid : ∀ {A : Type ℓ} {A-grpd} → is-pregroupoid (Disc A A-grpd)
 Disc-is-groupoid p = make-invertible _ (symᵢ p) (∙ᵢ-invl p) (∙ᵢ-invr p)
+
+Disc-is-univalent-groupoid : ∀ {A : Type ℓ} {A-grpd} → is-univalent-groupoid (Disc A A-grpd)
+Disc-is-univalent-groupoid = Id-identity-system
 ```
 
 <!--

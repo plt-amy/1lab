@@ -1,6 +1,7 @@
 <!--
 ```agda
 open import Cat.Functor.Base
+open import Cat.Groupoid
 open import Cat.Prelude
 
 import Cat.Reasoning
@@ -168,3 +169,15 @@ module
       Σ-pathp (Univalent.Hom-pathp-reflr-iso c-cat (C.idr _))
               (Univalent.Hom-pathp-reflr-iso d-cat (D.idr _))
 ```
+
+<!--
+```agda
+module _
+  {o ℓ o' ℓ'} {C : Precategory o ℓ} {D : Precategory o' ℓ'}
+  (c-gpd : is-univalent-groupoid C) (d-gpd : is-univalent-groupoid D)
+  where
+
+  ×ᶜ-is-univalent-groupoid : is-univalent-groupoid (C ×ᶜ D)
+  ×ᶜ-is-univalent-groupoid = ×-identity-system c-gpd d-gpd
+```
+-->

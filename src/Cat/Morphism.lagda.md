@@ -814,6 +814,12 @@ This may in turn be used to characterize paths between isomorphisms:
     (is-contr→is-prop hom-contr _ _)
 ≅-is-contr hom-contr .paths f = ≅-path (hom-contr .paths (f .to))
 
+iso≃is-invertible : ∀ {a b} → (a ≅ b) ≃ (Σ[ f ∈ Hom a b ] is-invertible f)
+iso≃is-invertible .fst f .fst = f .to
+iso≃is-invertible .fst f .snd = iso→invertible f
+iso≃is-invertible .snd .is-eqv (f , f-inv) .centre = strict-fibres (uncurry invertible→iso) (f , f-inv) .fst
+iso≃is-invertible .snd .is-eqv (f , f-inv) .paths = strict-fibres (uncurry invertible→iso) (f , f-inv) .snd
+
 ≅-is-prop : (∀ {a b} → is-prop (Hom a b)) → is-prop (a ≅ b)
 ≅-is-prop hom-prop f g = ≅-path (hom-prop (f .to) (g .to))
 

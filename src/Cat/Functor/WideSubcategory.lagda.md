@@ -88,6 +88,8 @@ module _ {o h} {C : Precategory o h} where
   Wide-hom-path {sub = sub} {f = f} {g = g} p i .witness =
     is-prop→pathp (λ i → sub .P-prop (p i)) (f .witness) (g .witness) i
 
+  unquoteDecl Wide-hom-iso-Σ = declare-record-iso Wide-hom-iso-Σ (quote Wide-hom)
+
   instance
     Extensional-wide-hom
       : ∀ {ℓ ℓr} {sub : Wide-subcat C ℓ} {x y : C.Ob}
@@ -98,9 +100,15 @@ module _ {o h} {C : Precategory o h} where
     H-Level-Wide-hom
       : ∀ {sub : Wide-subcat C ℓ} {x y : C.Ob} {n}
       → H-Level (Wide-hom sub x y) (2 + n)
-    H-Level-Wide-hom {sub = sub} = basic-instance 2 $ Iso→is-hlevel 2 eqv $
+    H-Level-Wide-hom {sub = sub} = basic-instance 2 $ Iso→is-hlevel 2 Wide-hom-iso-Σ $
       Σ-is-hlevel 2 (C.Hom-set _ _) λ f → is-hlevel-suc 1 (sub .P-prop f)
-      where unquoteDecl eqv = declare-record-iso eqv (quote Wide-hom)
+
+  Wide-hom≃witness
+    : {sub : Wide-subcat C ℓ}
+    → {x y : C.Ob}
+    → Wide-hom sub x y
+    ≃ (Σ[ f ∈ C.Hom x y ] f ∈ sub)
+  Wide-hom≃witness = Iso→Equiv Wide-hom-iso-Σ
 ```
 -->
 
